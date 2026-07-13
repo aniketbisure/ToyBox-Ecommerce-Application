@@ -19,8 +19,8 @@ const getBaseURL = (): string => {
       : 'http://localhost:5000/api';  // iOS simulator → host machine
   }
 
-  // Production — replace with your actual deployed backend URL
-  return 'https://toybox-backend.onrender.com/api';
+  // Production — deployed backend
+  return 'https://toybox-ecommerce-application.onrender.com/api';
 };
 
 const baseURL = getBaseURL();
