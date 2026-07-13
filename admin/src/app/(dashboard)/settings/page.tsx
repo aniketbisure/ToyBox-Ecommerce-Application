@@ -259,6 +259,36 @@ export default function SettingsPage() {
 
         {/* Mobile App Config */}
         <section className="bg-white rounded-3xl p-5 lg:p-8 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-3 mb-5 lg:mb-6">
+            <div className="p-2 bg-gray-100 rounded-lg shrink-0">
+              <Smartphone size={18} className="text-gray-500" />
+            </div>
+            <h3 className="text-lg lg:text-xl font-bold">App Configuration</h3>
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+            <div className="space-y-0.5">
+              <h4 className="font-bold text-dark">Maintenance Mode</h4>
+              <p className="text-xs text-gray-500">
+                Disable the mobile app for maintenance
+              </p>
+            </div>
+            <button
+              onClick={() =>
+                setConfig({ ...config, maintenanceMode: !config.maintenanceMode })
+              }
+              className={`w-12 h-6 rounded-full transition-colors relative ${
+                config.maintenanceMode ? "bg-primary" : "bg-gray-300"
+              }`}
+            >
+              <div
+                className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${
+                  config.maintenanceMode ? "left-7" : "left-1"
+                }`}
+              />
+            </button>
+          </div>
+        </section>
 
         <div className="flex justify-end gap-4 pt-2">
           <button
