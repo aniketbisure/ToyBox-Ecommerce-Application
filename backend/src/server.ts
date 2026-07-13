@@ -18,6 +18,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/toybox';
 
+// Trust Render's reverse proxy so express-rate-limit reads the real client IP
+app.set('trust proxy', 1);
+
 // SECURITY FIX: Fail fast if critical secrets are missing
 const REQUIRED_ENV = ['JWT_SECRET', 'JWT_REFRESH_SECRET', 'RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET'];
 REQUIRED_ENV.forEach((key) => {
