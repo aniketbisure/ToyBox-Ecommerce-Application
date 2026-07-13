@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #FF6B6B;
+  --secondary: #4ECDC4;
+  --accent: #FFE66D;
+}
+
+body {
+  color: #2D3436;
+  background: #F8F9FA;
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white px-4 py-2 rounded-xl font-bold transition-all hover:scale-105 active:scale-95;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-white hover:shadow-md;
+  }
+
+  .sidebar-link-active {
+    @apply bg-primary text-white shadow-lg hover:bg-primary/90;
+  }
+}

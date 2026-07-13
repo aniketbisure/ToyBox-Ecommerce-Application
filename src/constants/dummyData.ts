@@ -1,0 +1,57 @@
+export const PRODUCTS = [
+  {
+    id: '1',
+    name: 'Teddy Bear',
+    description: 'Soft and cuddly plush teddy bear, perfect for kids of all ages.',
+    price: 25.99,
+    category: 'Plush',
+    image: 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?auto=format&fit=crop&q=80&w=400',
+    images: [
+      'https://images.unsplash.com/photo-1559454403-b8fb88521f11?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1591333139245-2b41d452c98f?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1558877385-81a1c7e67d72?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1582533561751-ef6f6ab93a2e?auto=format&fit=crop&q=80&w=600',
+    ],
+    rating: 4.8,
+  },
+  {
+    id: '2',
+    name: 'LEGO Castle',
+    description: 'Build your own medieval castle with this 500-piece LEGO set.',
+    price: 59.99,
+    category: 'Building',
+    image: 'https://images.unsplash.com/photo-1585366119957-e556f403e4d7?auto=format&fit=crop&q=80&w=400',
+    images: [
+      'https://images.unsplash.com/photo-1585366119957-e556f403e4d7?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1518946222227-364f22132616?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1560155016-bd4879ae8f21?auto=format&fit=crop&q=80&w=600',
+    ],
+    rating: 4.9,
+  },
+  {
+    id: '3',
+    name: 'Remote Control Car',
+    description: 'High-speed RC car with durable tires and long-range remote.',
+    price: 45.00,
+    category: 'Electronics',
+    image: 'https://images.unsplash.com/photo-1594787318286-3d835c1d207f?auto=format&fit=crop&q=80&w=400',
+    images: [
+      'https://images.unsplash.com/photo-1594787318286-3d835c1d207f?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1532330393533-443990a51d10?auto=format&fit=crop&q=80&w=600',
+    ],
+    rating: 4.5,
+  },
+  {
+    id: '4',
+    name: 'Wooden Train Set',
+    description: 'Eco-friendly wooden train tracks and engine for creative play.',
+    price: 34.50,
+    category: 'Wooden',
+    image: 'https://images.unsplash.com/photo-1531608139434-1912ae0713cd?auto=format&fit=crop&q=80&w=400',
+    images: [
+      'https://images.unsplash.com/photo-1531608139434-1912ae0713cd?auto=format&fit=crop&q=80&w=600',
+      'https://images.unsplash.com/photo-1623939660011-b9281303abc4?auto=format&fit=crop&q=80&w=600',
+    ],
+    rating: 4.7,
+  },
+];

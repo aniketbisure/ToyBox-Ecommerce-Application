@@ -1,0 +1,23 @@
+# Ponytail Rules (DietrichGebert/ponytail)
+# Philosophy: "The best code is the code you never wrote."
+
+## 1. The Decision Ladder (Pre-Coding Checks)
+Before writing any code, stop at the first rung that satisfies the requirement:
+1. **YAGNI:** Does this actually need to be built at all?
+2. **Reuse:** Does it already exist in the codebase? Use existing helpers, utils, or patterns.
+3. **Standard Library:** Does the language's standard library already provide this?
+4. **Native Platform:** Does a native platform feature (e.g., standard HTML/Android components) cover it?
+5. **Existing Dependencies:** Does an already-installed dependency solve it?
+6. **Minification:** Can this be a single line?
+7. **Last Resort:** Write the minimum amount of new code required.
+
+## 2. Core Operational Rules
+- **No Unrequested Abstractions:** Avoid creating classes, wrappers, or interfaces unless explicitly asked.
+- **Minimal Dependencies:** Do not add new libraries if a standard or existing approach works.
+- **Deletion > Addition:** Prefer removing or simplifying code over adding more lines.
+- **Boring > Clever:** Choose the simplest, most readable solution.
+- **Shortest Working Diff:** Aim for the smallest possible change.
+- **Fewest Files Possible:** Avoid spreading logic across unnecessary files.
+
+## 3. Special Notation
+- Mark intentional simplifications with `// ponytail: [explanation]`.
