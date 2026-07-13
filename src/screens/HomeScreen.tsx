@@ -97,10 +97,10 @@ const HomeScreen = ({ navigation }: any) => {
         >
           <View style={[
             styles.topMenuIconBg,
-            { backgroundColor: item.color + '20' },
+            { backgroundColor: item.color + '15' },
             activeTopFilter === item.name && { borderWidth: 2, borderColor: item.color }
           ]}>
-            <Icon name={item.icon} size={30} color={item.color} />
+            <Icon name={item.icon} size={32} color={item.color} />
           </View>
           <Text style={[
             styles.topMenuText,
@@ -294,16 +294,16 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
     flex: 1,
   },
   topMenuIconBg: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
+    width: 60,
+    height: 60,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 6,
-    ...SHADOWS.light,
+    marginBottom: 8,
+    ...SHADOWS.small,
   },
   topMenuText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
     color: colors.textSecondary,
   },

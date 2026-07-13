@@ -263,7 +263,7 @@ export const getOrderById = async (req: AuthRequest, res: Response) => {
     const isOwner = order.user && (
       typeof order.user === 'object'
         ? (order.user as any)._id?.toString() === req.user?.id
-        : order.user.toString() === req.user?.id
+        : (order.user as any).toString() === req.user?.id
     );
     const isAdmin = req.user?.role === 'admin';
 

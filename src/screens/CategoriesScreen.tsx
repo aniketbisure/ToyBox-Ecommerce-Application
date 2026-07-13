@@ -24,8 +24,8 @@ const CategoriesScreen = ({ navigation }: any) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const sidebarItems = [
-    { id: '1', name: 'All Toys', icon: 'toy-brick-outline' },
-    ...categories.map((c, i) => ({ id: (i + 2).toString(), name: c, icon: 'tag-outline' }))
+    { id: '1', name: 'All Toys', icon: 'toy-brick-outline', color: COLORS.primary },
+    ...categories.map((c, i) => ({ id: (i + 2).toString(), name: c, icon: 'tag-outline', color: COLORS.text }))
   ];
 
   const categoryProducts = products.filter(p => {
@@ -34,23 +34,38 @@ const CategoriesScreen = ({ navigation }: any) => {
     return matchesCategory && matchesSearch;
   });
 
-  const renderSidebarItem = ({ item }: any) => (
-    <TouchableOpacity
-      style={[
-        styles.sidebarItem,
-        selectedCategory === item.name && styles.activeSidebarItem
-      ]}
-      onPress={() => setSelectedCategory(item.name)}
-    >
-      <View style={[styles.iconCircle, selectedCategory === item.name && styles.activeIconCircle]}>
-        <Icon name={item.icon} size={22} color={selectedCategory === item.name ? COLORS.primary : COLORS.gray} />
-      </View>
-      <Text style={[styles.sidebarText, selectedCategory === item.name && styles.activeSidebarText]} numberOfLines={2}>
-        {item.name}
-      </Text>
-      {selectedCategory === item.name && <View style={styles.activeIndicator} />}
-    </TouchableOpacity>
-  );
+  const renderSidebarItem = ({ item }: any) => {
+    const isActive = selectedCategory === item.name;
+    return (
+      <TouchableOpacity
+        style={[
+          styles.sidebarItem,
+          isActive && styles.activeSidebarItem
+        ]}
+        onPress={() => setSelectedCategory(item.name)}
+      >
+        <View style={[
+          styles.iconCircle,
+          isActive && { backgroundColor: item.color + '15' },
+          item.name === 'All Toys' && !isActive && { backgroundColor: COLORS.primary + '10' }
+        ]}>
+          <Icon
+            name={item.icon}
+            size={24}
+            color={isActive ? item.color : (item.name === 'All Toys' ? COLORS.primary : COLORS.gray)}
+          />
+        </View>
+        <Text style={[
+          styles.sidebarText,
+          isActive && { color: item.color, fontWeight: '800' },
+          item.name === 'All Toys' && !isActive && { color: COLORS.primary }
+        ]} numberOfLines={2}>
+          {item.name}
+        </Text>
+        {isActive && <View style={[styles.activeIndicator, { backgroundColor: item.color }]} />}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -80,12 +95,17 @@ const CategoriesScreen = ({ navigation }: any) => {
             data={sidebarItems}
             renderItem={renderSidebarItem}
             keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator={true}
+            persistentScrollbar={true}
           />
         </View>
 
         {/* Content Area */}
-        <ScrollView style={styles.contentArea} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={styles.contentArea}
+          showsVerticalScrollIndicator={true}
+          persistentScrollbar={true}
+        >
           <Text style={styles.sectionTitle}>{selectedCategory} Collection</Text>
           <View style={styles.grid}>
             {categoryProducts.map((item, i) => (
@@ -192,14 +212,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   iconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
+    width: 52,
+    height: 52,
+    borderRadius: 18,
     backgroundColor: COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
-    ...SHADOWS.light,
-    marginBottom: 6,
+    ...SHADOWS.small,
+    marginBottom: 8,
   },
   activeIconCircle: {
     backgroundColor: COLORS.primary + '15',
