@@ -74,7 +74,7 @@ const CartScreen = ({ navigation }: any) => {
             <Icon name="trash-can-outline" size={20} color={COLORS.error} />
           </TouchableOpacity>
         </View>
-        <Text style={styles.itemCategory}>{item.category}</Text>
+        <Text style={styles.itemCategory}>Qty: {item.quantity}</Text>
 
         <View style={styles.itemFooter}>
           <Text style={styles.itemPrice}>₹{item.price.toFixed(0)}</Text>

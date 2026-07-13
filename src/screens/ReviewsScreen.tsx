@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
 import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';

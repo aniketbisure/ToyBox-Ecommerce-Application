@@ -11,6 +11,7 @@ export default function ProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
 
   useEffect(() => {

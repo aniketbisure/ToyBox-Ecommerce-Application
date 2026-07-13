@@ -33,7 +33,32 @@ export const getConfig = async (req: Request, res: Response) => {
 
 export const updateConfig = async (req: Request, res: Response) => {
   try {
-    const config = await AppConfig.findOneAndUpdate({}, req.body, { new: true, upsert: true });
+    // Whitelist only safe, top-level config fields — never accept banners or categories
+    // via this generic endpoint to avoid accidental overwrites
+    const {
+      storeName,
+      supportEmail,
+      currency,
+      shippingFee,
+      freeShippingThreshold,
+      taxRate,
+      maintenanceMode,
+    } = req.body;
+
+    const update: Record<string, any> = {};
+    if (storeName !== undefined) update.storeName = storeName;
+    if (supportEmail !== undefined) update.supportEmail = supportEmail;
+    if (currency !== undefined) update.currency = currency;
+    if (shippingFee !== undefined) update.shippingFee = Number(shippingFee);
+    if (freeShippingThreshold !== undefined) update.freeShippingThreshold = Number(freeShippingThreshold);
+    if (taxRate !== undefined) update.taxRate = Number(taxRate);
+    if (maintenanceMode !== undefined) update.maintenanceMode = Boolean(maintenanceMode);
+
+    const config = await AppConfig.findOneAndUpdate(
+      {},
+      { $set: update },
+      { new: true, upsert: true }
+    );
     res.json(config);
   } catch (error) {
     res.status(500).json({ message: 'Error updating app config', error });
@@ -79,6 +104,23 @@ export const addBanner = async (req: Request, res: Response) => {
     res.json(config);
   } catch (error) {
     res.status(500).json({ message: 'Error adding banner', error });
+  }
+};
+
+export const updateBanners = async (req: Request, res: Response) => {
+  try {
+    const { banners } = req.body;
+    if (!Array.isArray(banners)) {
+      return res.status(400).json({ message: 'banners must be an array' });
+    }
+    const config = await AppConfig.findOneAndUpdate(
+      {},
+      { $set: { banners } },
+      { new: true, upsert: true }
+    );
+    res.json(config);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating banners', error });
   }
 };
 

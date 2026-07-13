@@ -1,11 +1,29 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
 
-// Use 10.0.2.2 for Android Emulator to reach computer's localhost
-const baseURL = Platform.OS === 'android'
-  ? 'http://10.0.2.2:5000/api'
-  : 'http://localhost:5000/api';
+// Priority order for base URL:
+// 1. Deployed production URL (set BACKEND_URL in your react-native-config .env)
+// 2. Android emulator loopback (reaches host machine's localhost)
+// 3. iOS simulator loopback
+//
+// For physical device testing, set BACKEND_URL=http://<your-machine-ip>:5000/api
+// in a .env file using react-native-config, or replace the fallback below.
+const getBaseURL = (): string => {
+  // If you use react-native-config, uncomment:
+  // import Config from 'react-native-config';
+  // if (Config.BACKEND_URL) return Config.BACKEND_URL;
 
+  if (__DEV__) {
+    return Platform.OS === 'android'
+      ? 'http://10.0.2.2:5000/api'   // Android emulator → host machine
+      : 'http://localhost:5000/api';  // iOS simulator → host machine
+  }
+
+  // Production — replace with your actual deployed backend URL
+  return 'https://toybox-backend.onrender.com/api';
+};
+
+const baseURL = getBaseURL();
 console.log('🌐 API Base URL:', baseURL);
 
 const apiClient = axios.create({
@@ -47,6 +65,9 @@ apiClient.interceptors.response.use(
         if (refreshTokenAction.fulfilled.match(resultAction)) {
           originalRequest.headers.Authorization = `Bearer ${resultAction.payload.token}`;
           return apiClient(originalRequest);
+        } else {
+          // Token refresh fulfilled but returned an error payload
+          store.dispatch(logout());
         }
       } catch (err) {
         store.dispatch(logout());

@@ -49,7 +49,7 @@ export default function DashboardPage() {
         setData({
           revenue,
           users: usersRes.data.length,
-          products: productsRes.data.length,
+          products: productsRes.data.total ?? productsRes.data.products?.length ?? 0,
           ordersToday
         });
 

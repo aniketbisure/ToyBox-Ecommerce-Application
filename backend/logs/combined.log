@@ -11,3 +11,13 @@
 {"level":"info","message":"Found 0 stale pending orders for check.","service":"toybox-backend","timestamp":"2026-07-13T07:30:02.372Z"}
 {"level":"info","message":"Starting scheduled order reconciliation job...","service":"toybox-backend","timestamp":"2026-07-13T08:30:00.831Z"}
 {"level":"info","message":"Found 0 stale pending orders for check.","service":"toybox-backend","timestamp":"2026-07-13T08:30:01.758Z"}
+{"level":"info","message":"🚀 Server running on port 5000","service":"toybox-backend","timestamp":"2026-07-13T09:26:16.723Z"}
+{"level":"info","message":"✅ MongoDB Connected","service":"toybox-backend","timestamp":"2026-07-13T09:26:17.538Z"}
+{"level":"info","message":"🚀 Server running on port 5000","service":"toybox-backend","timestamp":"2026-07-13T09:30:07.923Z"}
+{"level":"info","message":"✅ MongoDB Connected","service":"toybox-backend","timestamp":"2026-07-13T09:30:09.054Z"}
+{"level":"info","message":"🚀 Server running on port 5000","service":"toybox-backend","timestamp":"2026-07-13T09:35:06.279Z"}
+{"level":"info","message":"✅ MongoDB Connected","service":"toybox-backend","timestamp":"2026-07-13T09:35:06.945Z"}
+{"level":"info","message":"🚀 Server running on port 5000","service":"toybox-backend","timestamp":"2026-07-13T09:35:20.150Z"}
+{"level":"info","message":"✅ MongoDB Connected","service":"toybox-backend","timestamp":"2026-07-13T09:35:20.708Z"}
+{"level":"info","message":"🚀 Server running on port 5000","service":"toybox-backend","timestamp":"2026-07-13T09:35:44.182Z"}
+{"level":"info","message":"✅ MongoDB Connected","service":"toybox-backend","timestamp":"2026-07-13T09:35:44.846Z"}

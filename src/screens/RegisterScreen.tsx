@@ -152,13 +152,22 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
           </View>
 
           <View style={styles.socialRow}>
-            <TouchableOpacity style={styles.socialBtn}>
+            <TouchableOpacity
+              style={styles.socialBtn}
+              onPress={() => showToast('Google sign-up coming soon', 'info')}
+            >
               <Icon name="google" size={24} color="#EA4335" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.socialBtn}>
+            <TouchableOpacity
+              style={styles.socialBtn}
+              onPress={() => showToast('Facebook sign-up coming soon', 'info')}
+            >
               <Icon name="facebook" size={24} color="#1877F2" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.socialBtn}>
+            <TouchableOpacity
+              style={styles.socialBtn}
+              onPress={() => showToast('Apple sign-up coming soon', 'info')}
+            >
               <Icon name="apple" size={24} color="#000000" />
             </TouchableOpacity>
           </View>

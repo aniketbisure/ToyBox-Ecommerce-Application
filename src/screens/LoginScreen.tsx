@@ -112,7 +112,10 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.forgotBtn}>
+          <TouchableOpacity
+            style={styles.forgotBtn}
+            onPress={() => showToast('Password reset coming soon', 'info')}
+          >
             <Text style={styles.forgotText}>Forgot Password?</Text>
           </TouchableOpacity>
 
@@ -140,13 +143,22 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
           </View>
 
           <View style={styles.socialRow}>
-            <TouchableOpacity style={[styles.socialBtn, { borderColor: '#EA4335' }]}>
+            <TouchableOpacity
+              style={[styles.socialBtn, { borderColor: '#EA4335' }]}
+              onPress={() => showToast('Google login coming soon', 'info')}
+            >
               <Icon name="google" size={24} color="#EA4335" />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.socialBtn, { borderColor: '#1877F2' }]}>
+            <TouchableOpacity
+              style={[styles.socialBtn, { borderColor: '#1877F2' }]}
+              onPress={() => showToast('Facebook login coming soon', 'info')}
+            >
               <Icon name="facebook" size={24} color="#1877F2" />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.socialBtn, { borderColor: '#000000' }]}>
+            <TouchableOpacity
+              style={[styles.socialBtn, { borderColor: '#000000' }]}
+              onPress={() => showToast('Apple login coming soon', 'info')}
+            >
               <Icon name="apple" size={24} color="#000000" />
             </TouchableOpacity>
           </View>

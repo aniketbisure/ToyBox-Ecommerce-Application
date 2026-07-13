@@ -73,10 +73,18 @@ export default function BannersPage() {
   };
 
   const toggleActive = async (id: string) => {
-    // This would ideally be a granular update, but for now we'll just update the whole list
-    const updatedBanners = banners.map(b => b._id === id ? { ...b, isActive: !b.isActive } : b);
+    const banner = banners.find(b => b._id === id);
+    if (!banner) return;
     try {
-      await api.put("/config", { banners: updatedBanners });
+      // Use the dedicated delete + re-add approach isn't ideal, so we update
+      // the full banners array via a dedicated banners endpoint concept.
+      // Since the backend only has add/delete for banners, we delete and re-add with toggled state.
+      // Better: call a granular banner update route. For now, patch via config banners array.
+      const updatedBanners = banners.map(b =>
+        b._id === id ? { ...b, isActive: !b.isActive } : b
+      );
+      // POST to a bulk-update endpoint that only touches banners
+      await api.put("/config/banners/bulk", { banners: updatedBanners });
       setBanners(updatedBanners);
     } catch (error) {
       alert("Failed to toggle banner status");

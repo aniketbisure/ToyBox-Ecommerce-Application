@@ -3,9 +3,10 @@ import User from '../models/User';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+// Fix: remove fallback insecure defaults — server.ts already enforces these exist at startup
 const generateTokens = (id: string, role: string, name: string) => {
-  const accessToken = jwt.sign({ id, role, name }, process.env.JWT_SECRET || 'secret', { expiresIn: '15m' });
-  const refreshToken = jwt.sign({ id }, process.env.JWT_REFRESH_SECRET || 'refresh_secret', { expiresIn: '7d' });
+  const accessToken = jwt.sign({ id, role, name }, process.env.JWT_SECRET!, { expiresIn: '15m' });
+  const refreshToken = jwt.sign({ id }, process.env.JWT_REFRESH_SECRET!, { expiresIn: '7d' });
   return { accessToken, refreshToken };
 };
 
@@ -66,7 +67,7 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'refresh_secret') as any;
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as any;
     const user = await User.findById(decoded.id);
 
     if (!user || user.refreshToken !== refreshToken) {

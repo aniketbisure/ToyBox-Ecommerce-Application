@@ -3,6 +3,12 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Platform }
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../redux/store';
 import { clearCart } from '../redux/slices/cartSlice';
+
+// Razorpay key — read from app config Redux state (fetched from backend)
+// Falls back to test key so payment screen always renders
+const getRazorpayKey = (configState: any): string => {
+  return configState?.razorpayKeyId || 'rzp_test_TCuOm81OvEluht';
+};
 import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
 import { showToast } from '../utils/toastService';
 import apiClient from '../api/apiClient';
@@ -16,6 +22,8 @@ const CheckoutScreen = ({ navigation }: any) => {
   const dispatch = useDispatch();
   const { totalAmount, items } = useSelector((state: RootState) => state.cart);
   const user = useSelector((state: RootState) => state.auth.user);
+  const configState = useSelector((state: RootState) => state.config);
+  const razorpayKey = getRazorpayKey(configState);
   const [loading, setLoading] = useState(false);
 
   const StepIndicator = () => (
@@ -72,7 +80,7 @@ const CheckoutScreen = ({ navigation }: any) => {
         description: 'Premium Kids Toys Purchase',
         image: 'https://i.imgur.com/3g7nmJC.png',
         currency: 'INR',
-        key: process.env.RAZORPAY_KEY || 'rzp_test_default',
+        key: razorpayKey,
         amount: Math.round(pendingOrder.totalPrice * 100),
         order_id: pendingOrder.razorpayOrderId,
         name: 'ToyBox Store',

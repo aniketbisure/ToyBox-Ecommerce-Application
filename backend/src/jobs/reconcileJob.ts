@@ -46,11 +46,14 @@ export const initOrderReconciliationJob = () => {
               };
 
               for (const item of order.orderItems) {
-                await Product.findOneAndUpdate(
+                const updated = await Product.findOneAndUpdate(
                   { _id: item.product, stock: { $gte: item.quantity } },
                   { $inc: { stock: -item.quantity } },
                   { session }
                 );
+                if (!updated) {
+                  throw new Error(`Insufficient stock for product during reconciliation: ${item.name}`);
+                }
               }
               await order.save({ session });
               await session.commitTransaction();

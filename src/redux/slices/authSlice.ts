@@ -78,7 +78,7 @@ export const getProfile = createAsyncThunk(
   'auth/getProfile',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await apiClient.get('/auth/profile');
+      const response = await apiClient.get('/users/profile');
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile');
@@ -171,5 +171,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { logout, clearError, setTokens, updateUserAddress } = authSlice.actions;
 export default authSlice.reducer;

@@ -19,7 +19,7 @@ const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/toybox';
 
 // SECURITY FIX: Fail fast if critical secrets are missing
-const REQUIRED_ENV = ['JWT_SECRET', 'RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET'];
+const REQUIRED_ENV = ['JWT_SECRET', 'JWT_REFRESH_SECRET', 'RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET'];
 REQUIRED_ENV.forEach((key) => {
   if (!process.env[key]) {
     logger.error(`ERROR: Missing critical environment variable ${key}`);
@@ -33,7 +33,18 @@ app.use(express.json({
     req.rawBody = buf.toString();
   }
 }));
-app.use(cors());
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',');
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS: origin ${origin} not allowed`));
+    }
+  },
+  credentials: true,
+}));
 
 // Rate Limiting
 const limiter = rateLimit({

@@ -20,6 +20,10 @@ const ProfileScreen = () => {
   const { colors, isDarkMode } = useTheme();
   const user = useSelector((state: RootState) => state.auth.user);
   const [orderCount, setOrderCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+
+  const wishlistItems = useSelector((state: RootState) => state.wishlist?.items ?? []);
 
   const styles = useMemo(() => createStyles(colors, insets), [colors, insets]);
 
@@ -33,7 +37,9 @@ const ProfileScreen = () => {
       }
     };
     fetchStats();
-  }, []);
+    // Wishlist count comes from persisted redux state
+    setWishlistCount(wishlistItems.length);
+  }, [wishlistItems.length]);
 
   const menuOptions = [
     { name: 'My Orders', icon: 'package-variant-closed', color: '#FFB8B8', screen: 'MyOrders' },
@@ -137,12 +143,12 @@ const ProfileScreen = () => {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.secondary }]}>0</Text>
+              <Text style={[styles.statValue, { color: colors.secondary }]}>{wishlistCount}</Text>
               <Text style={styles.statLabel}>Wishlist</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.accent }]}>0</Text>
+              <Text style={[styles.statValue, { color: colors.accent }]}>{reviewCount}</Text>
               <Text style={styles.statLabel}>Reviews</Text>
             </View>
           </View>

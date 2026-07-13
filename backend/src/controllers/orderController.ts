@@ -239,19 +239,31 @@ export const updateOrderToDelivered = async (req: AuthRequest, res: Response) =>
 };
 
 export const getMyOrders = async (req: AuthRequest, res: Response) => {
-  const orders = await Order.find({ user: req.user?.id });
-  res.json(orders);
+  try {
+    const orders = await Order.find({ user: req.user?.id });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching orders', error });
+  }
 };
 
 export const getOrderById = async (req: AuthRequest, res: Response) => {
   try {
     const order = await Order.findById(req.params.id).populate('user', 'name email');
 
-    if (order) {
-      res.json(order);
-    } else {
-      res.status(404).json({ message: 'Order not found' });
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
     }
+
+    // Only allow the order owner or an admin to view it
+    const isOwner = order.user && order.user.toString() === req.user?.id;
+    const isAdmin = req.user?.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ message: 'Not authorized to view this order' });
+    }
+
+    res.json(order);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching order', error });
   }

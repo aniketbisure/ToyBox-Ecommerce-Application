@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -12,7 +12,8 @@ import {
   Users,
   Settings,
   LogOut,
-  ShieldCheck
+  ShieldCheck,
+  Loader2
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -22,11 +23,38 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
-    const userInfo = localStorage.getItem("userInfo");
-    if (!userInfo) {
-      router.push("/login");
+    const userInfoRaw = localStorage.getItem("userInfo");
+
+    if (!userInfoRaw) {
+      router.replace("/login");
+      return;
+    }
+
+    try {
+      const userInfo = JSON.parse(userInfoRaw);
+      // Verify token exists and user is actually an admin
+      if (!userInfo?.token || userInfo?.user?.role !== "admin") {
+        localStorage.removeItem("userInfo");
+        router.replace("/login");
+        return;
+      }
+
+      // Verify token is not expired (decode JWT payload without library)
+      const [, payload] = userInfo.token.split(".");
+      const decoded = JSON.parse(atob(payload));
+      if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+        localStorage.removeItem("userInfo");
+        router.replace("/login");
+        return;
+      }
+
+      setIsVerified(true);
+    } catch {
+      localStorage.removeItem("userInfo");
+      router.replace("/login");
     }
   }, [router]);
 
@@ -39,6 +67,15 @@ export default function DashboardLayout({
     { name: "Users", icon: Users, href: "/users" },
     { name: "Settings", icon: Settings, href: "/settings" },
   ];
+
+  // Block render until auth verified — prevents flash of dashboard content
+  if (!isVerified) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="animate-spin text-primary" size={48} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">

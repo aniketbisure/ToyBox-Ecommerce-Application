@@ -5,7 +5,8 @@ import {
   addCategory,
   deleteCategory,
   addBanner,
-  deleteBanner
+  deleteBanner,
+  updateBanners
 } from '../controllers/configController';
 import { protect, admin } from '../middleware/authMiddleware';
 
@@ -16,6 +17,7 @@ router.put('/', protect, admin, updateConfig);
 router.post('/categories', protect, admin, addCategory);
 router.delete('/categories/:name', protect, admin, deleteCategory);
 router.post('/banners', protect, admin, addBanner);
+router.put('/banners/bulk', protect, admin, updateBanners);
 router.delete('/banners/:id', protect, admin, deleteBanner);
 
 export default router;

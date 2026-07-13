@@ -146,7 +146,7 @@ export default function CategoriesPage() {
                 Cancel
               </button>
               <button
-                onClick={() => setShowAddModal(false)}
+                onClick={handleAddCategory}
                 className="flex-[2] bg-primary text-white py-4 rounded-2xl font-black tracking-wide shadow-lg shadow-primary/30 hover:bg-primary/90 active:scale-95 transition-all"
               >
                 CREATE CATEGORY
