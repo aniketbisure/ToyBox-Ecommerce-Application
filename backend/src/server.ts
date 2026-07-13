@@ -33,15 +33,16 @@ app.use(express.json({
     req.rawBody = buf.toString();
   }
 }));
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',');
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000').split(',').map(o => o.trim());
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl, Postman)
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`CORS: origin ${origin} not allowed`));
+    if (!origin) return callback(null, true);
+    // Allow any vercel.app subdomain in development/staging
+    if (origin.endsWith('.vercel.app') || ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
     }
+    callback(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true,
 }));
