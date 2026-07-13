@@ -23,13 +23,13 @@ export default function SettingsPage() {
       try {
         const { data } = await api.get("/config");
         setConfig({
-          storeName: data.storeName,
-          supportEmail: data.supportEmail,
-          currency: data.currency,
-          shippingFee: data.shippingFee,
-          freeShippingThreshold: data.freeShippingThreshold,
-          taxRate: data.taxRate,
-          maintenanceMode: data.maintenanceMode,
+          storeName: data.storeName || "",
+          supportEmail: data.supportEmail || "",
+          currency: data.currency || "INR",
+          shippingFee: data.shippingFee || 0,
+          freeShippingThreshold: data.freeShippingThreshold || 0,
+          taxRate: data.taxRate || 0,
+          maintenanceMode: data.maintenanceMode || false,
           ageRanges: data.ageRanges || [],
         });
       } catch (_error) {
@@ -63,7 +63,6 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-5 lg:space-y-8 max-w-4xl">
-      {/* Header */}
       <header>
         <h2 className="text-2xl lg:text-3xl font-black text-dark">
           Store Settings
@@ -74,7 +73,6 @@ export default function SettingsPage() {
       </header>
 
       <div className="space-y-4 lg:space-y-6">
-        {/* General Settings */}
         <section className="bg-white rounded-3xl p-5 lg:p-8 shadow-sm border border-gray-100">
           <div className="flex items-center gap-3 mb-5 lg:mb-6">
             <div className="p-2 bg-gray-100 rounded-lg shrink-0">
@@ -128,7 +126,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Shipping & Delivery */}
         <section className="bg-white rounded-3xl p-5 lg:p-8 shadow-sm border border-gray-100">
           <div className="flex items-center gap-3 mb-5 lg:mb-6">
             <div className="p-2 bg-gray-100 rounded-lg shrink-0">
@@ -183,7 +180,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* App Configuration */}
         <section className="bg-white rounded-3xl p-5 lg:p-8 shadow-sm border border-gray-100">
           <div className="flex items-center gap-3 mb-5 lg:mb-6">
             <div className="p-2 bg-gray-100 rounded-lg shrink-0">
@@ -193,7 +189,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-4">
-            {config.ageRanges.map((range, index) => (
+            {config.ageRanges.map((range: any, index: number) => (
               <div key={index} className="flex gap-4 items-end bg-gray-50 p-4 rounded-2xl">
                 <div className="flex-1 space-y-1">
                   <label className="text-[10px] font-bold text-gray-400 uppercase">Label</label>
@@ -202,7 +198,7 @@ export default function SettingsPage() {
                     value={range.name}
                     onChange={(e) => {
                       const newRanges = [...config.ageRanges];
-                      newRanges[index].name = e.target.value;
+                      newRanges[index] = { ...newRanges[index], name: e.target.value };
                       setConfig({ ...config, ageRanges: newRanges });
                     }}
                     className="w-full bg-white p-2 rounded-lg text-sm border-none outline-none"
@@ -215,7 +211,7 @@ export default function SettingsPage() {
                     value={range.minAge}
                     onChange={(e) => {
                       const newRanges = [...config.ageRanges];
-                      newRanges[index].minAge = Number(e.target.value);
+                      newRanges[index] = { ...newRanges[index], minAge: Number(e.target.value) };
                       setConfig({ ...config, ageRanges: newRanges });
                     }}
                     className="w-full bg-white p-2 rounded-lg text-sm border-none outline-none"
@@ -228,7 +224,7 @@ export default function SettingsPage() {
                     value={range.maxAge}
                     onChange={(e) => {
                       const newRanges = [...config.ageRanges];
-                      newRanges[index].maxAge = Number(e.target.value);
+                      newRanges[index] = { ...newRanges[index], maxAge: Number(e.target.value) };
                       setConfig({ ...config, ageRanges: newRanges });
                     }}
                     className="w-full bg-white p-2 rounded-lg text-sm border-none outline-none"
@@ -257,7 +253,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Mobile App Config */}
         <section className="bg-white rounded-3xl p-5 lg:p-8 shadow-sm border border-gray-100">
           <div className="flex items-center gap-3 mb-5 lg:mb-6">
             <div className="p-2 bg-gray-100 rounded-lg shrink-0">
