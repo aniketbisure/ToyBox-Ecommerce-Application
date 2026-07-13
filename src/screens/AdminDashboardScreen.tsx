@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { COLORS, FONTS, SHADOWS } from '../constants/theme';
 import { moderateScale } from '../utils/responsive';
@@ -8,12 +8,17 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store';
 import { fetchProducts } from '../redux/slices/productSlice';
 import apiClient from '../api/apiClient';
+import { useTheme } from '../hooks/useTheme';
 
 const AdminDashboardScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors, insets), [colors, insets]);
   const dispatch = useDispatch<AppDispatch>();
   const { products } = useSelector((state: RootState) => state.products);
   const [orderCount, setOrderCount] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [userCount, setUserCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,9 +44,6 @@ const AdminDashboardScreen = ({ navigation }: any) => {
     loadStats();
   }, [dispatch]);
 
-  const [totalRevenue, setTotalRevenue] = useState(0);
-  const [userCount, setUserCount] = useState(0);
-
   const stats = [
     { label: 'Active Orders', value: orderCount.toString(), icon: 'package-variant', color: '#FF6B6B' },
     { label: 'Total Products', value: products.length.toString(), icon: 'toy-brick-outline', color: '#FFE66D' },
@@ -57,14 +59,14 @@ const AdminDashboardScreen = ({ navigation }: any) => {
   ];
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container]}>
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity
             style={{ marginRight: moderateScale(15) }}
             onPress={() => navigation.goBack()}
           >
-            <Icon name="arrow-left" size={26} color={COLORS.text} />
+            <Icon name="arrow-left" size={26} color={colors.text} />
           </TouchableOpacity>
           <View>
             <Text style={styles.greeting}>Admin Control Center</Text>
@@ -73,9 +75,9 @@ const AdminDashboardScreen = ({ navigation }: any) => {
         </View>
         <TouchableOpacity
           style={styles.profileBtn}
-          onPress={() => navigation.navigate('Admin' as never, { screen: 'Settings' })}
+          onPress={() => navigation.navigate('Admin', { screen: 'Settings' })}
         >
-          <Icon name="cog-outline" size={26} color={COLORS.text} />
+          <Icon name="cog-outline" size={26} color={colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -84,7 +86,7 @@ const AdminDashboardScreen = ({ navigation }: any) => {
         contentContainerStyle={styles.scrollContent}
       >
         {loading ? (
-          <ActivityIndicator size="large" color={COLORS.primary} style={{ marginVertical: moderateScale(30) }} />
+          <ActivityIndicator size="large" color={colors.primary} style={{ marginVertical: moderateScale(30) }} />
         ) : (
           <View style={styles.statsGrid}>
             {stats.map((stat, i) => (
@@ -111,14 +113,14 @@ const AdminDashboardScreen = ({ navigation }: any) => {
             >
               <View style={styles.actionInfo}>
                 <View style={styles.actionIconBg}>
-                  <Icon name={action.icon} size={28} color={COLORS.primary} />
+                  <Icon name={action.icon} size={28} color={colors.primary} />
                 </View>
                 <View style={styles.actionTextContent}>
                   <Text style={styles.actionName}>{action.name}</Text>
                   <Text style={styles.actionDesc}>{action.description}</Text>
                 </View>
               </View>
-              <Icon name="chevron-right" size={24} color={COLORS.gray} />
+              <Icon name="chevron-right" size={24} color={colors.gray} />
             </TouchableOpacity>
           ))}
         </View>
@@ -136,10 +138,11 @@ const AdminDashboardScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, insets: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
+    paddingTop: insets.top,
   },
   header: {
     flexDirection: 'row',
@@ -147,23 +150,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: moderateScale(20),
     paddingBottom: moderateScale(20),
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     ...SHADOWS.light,
   },
   greeting: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
     fontSize: moderateScale(12),
   },
   title: {
     ...FONTS.h1,
     fontSize: moderateScale(26),
+    color: colors.text,
   },
   profileBtn: {
     width: moderateScale(45),
     height: moderateScale(45),
     borderRadius: moderateScale(15),
-    backgroundColor: COLORS.lightGray,
+    backgroundColor: colors.lightGray,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -179,7 +183,7 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '48%',
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     padding: moderateScale(15),
     borderRadius: moderateScale(20),
     marginBottom: moderateScale(15),
@@ -196,16 +200,18 @@ const styles = StyleSheet.create({
   statValue: {
     ...FONTS.h2,
     fontSize: moderateScale(18),
+    color: colors.text,
   },
   statLabel: {
     ...FONTS.caption,
-    color: COLORS.gray,
+    color: colors.gray,
     marginTop: 2,
   },
   sectionTitle: {
     ...FONTS.h3,
     fontSize: moderateScale(18),
     marginBottom: moderateScale(15),
+    color: colors.text,
   },
   actionsContainer: {
     gap: moderateScale(15),
@@ -215,7 +221,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     padding: moderateScale(18),
     borderRadius: moderateScale(20),
     ...SHADOWS.medium,
@@ -229,7 +235,7 @@ const styles = StyleSheet.create({
     width: moderateScale(50),
     height: moderateScale(50),
     borderRadius: moderateScale(15),
-    backgroundColor: COLORS.lightGray,
+    backgroundColor: colors.lightGray,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -240,10 +246,11 @@ const styles = StyleSheet.create({
   actionName: {
     ...FONTS.h3,
     fontSize: moderateScale(15),
+    color: colors.text,
   },
   actionDesc: {
     ...FONTS.caption,
-    color: COLORS.gray,
+    color: colors.gray,
     marginTop: 2,
   },
   statusCard: {
@@ -264,7 +271,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   statusTitle: {
-    color: COLORS.white,
+    color: '#FFFFFF',
     fontWeight: '700',
     fontSize: moderateScale(14),
   },

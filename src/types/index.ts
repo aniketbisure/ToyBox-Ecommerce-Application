@@ -61,3 +61,18 @@ export interface Order {
   isDelivered: boolean;
   createdAt: string;
 }
+
+export interface Review {
+  id: string;
+  product: string;
+  rating: number;
+  date: string;
+  comment: string;
+}
+
+export interface PaymentMethod {
+  id: string;
+  name: string;
+  icon: string;
+  last4: string;
+}

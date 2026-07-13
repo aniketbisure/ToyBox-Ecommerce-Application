@@ -63,7 +63,7 @@ const OrderSuccessScreen = ({ navigation }: any) => {
 
         <TouchableOpacity
           style={styles.trackBtn}
-          onPress={() => navigation.navigate('Profile')}
+          onPress={() => navigation.navigate('ProfileTab')}
         >
           <Text style={styles.trackText}>Track My Order</Text>
         </TouchableOpacity>

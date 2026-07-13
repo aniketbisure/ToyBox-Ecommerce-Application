@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
 import { moderateScale } from '../utils/responsive';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { showToast } from '../utils/toastService';
-
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import { updateUserAddress } from '../redux/slices/authSlice';
+import apiClient from '../api/apiClient';
 
 const AddressScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
+  const [loading, setLoading] = useState(false);
 
   const [address, setAddress] = useState({
     street: user?.address?.street || '',
@@ -23,14 +24,28 @@ const AddressScreen = ({ navigation }: any) => {
     country: user?.address?.country || 'India'
   });
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!address.street || !address.city || !address.zip) {
       showToast('Please fill in required fields', 'error');
       return;
     }
-    dispatch(updateUserAddress(address));
-    showToast('Address saved successfully', 'success');
-    navigation.goBack();
+    setLoading(true);
+    try {
+      // Persist address to backend so it survives logout
+      await apiClient.put('/users/profile', {
+        name: user?.name,
+        email: user?.email,
+        address,
+      });
+      // Also update Redux state for immediate UI update
+      dispatch(updateUserAddress(address));
+      showToast('Address saved successfully', 'success');
+      navigation.goBack();
+    } catch (error) {
+      showToast('Failed to save address', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -74,6 +74,18 @@ export const refreshTokenAction = createAsyncThunk(
   }
 );
 
+export const logoutUser = createAsyncThunk(
+  'auth/logout',
+  async (_, { dispatch }) => {
+    try {
+      await clearTokens();
+    } catch (error) {
+      console.error('Error clearing tokens during logout:', error);
+    }
+    dispatch(logout());
+  }
+);
+
 export const getProfile = createAsyncThunk(
   'auth/getProfile',
   async (_, { rejectWithValue }) => {
@@ -96,7 +108,6 @@ const authSlice = createSlice({
       state.refreshToken = null;
       state.isAuthenticated = false;
       state.error = null;
-      clearTokens();
     },
     setTokens: (state, action: PayloadAction<{ token: string; refreshToken: string }>) => {
       state.token = action.payload.token;

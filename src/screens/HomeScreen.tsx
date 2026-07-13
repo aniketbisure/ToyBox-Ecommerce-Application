@@ -42,8 +42,41 @@ const HomeScreen = ({ navigation }: any) => {
   const [displayProducts, setDisplayProducts] = useState<Product[]>(products);
   const [isListening, setIsListening] = useState(false);
 
+  // Keep displayProducts in sync with products from Redux
+  useEffect(() => {
+    setDisplayProducts(products);
+  }, [products]);
+
   // Optimization: Memoize styles to prevent recalculation on every render
   const styles = useMemo(() => createStyles(colors, insets), [colors, insets]);
+
+  const loadData = useCallback(async () => {
+    dispatch(fetchProducts());
+    dispatch(fetchAppConfig());
+  }, [dispatch]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  }, [loadData]);
+
+  const handleSearch = useCallback((text: string) => {
+    if (!text.trim()) {
+      setDisplayProducts(products);
+      return;
+    }
+    const filtered = products.filter(p =>
+      p.name.toLowerCase().includes(text.toLowerCase())
+    );
+    setDisplayProducts(filtered);
+  }, [products]);
+
+  const handleVoiceSearch = useCallback(() => {
+    setIsListening(true);
+    // Close after 3 seconds (voice search not yet implemented)
+    setTimeout(() => setIsListening(false), 3000);
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -95,21 +128,24 @@ const HomeScreen = ({ navigation }: any) => {
     </View>
   );
 
-  const renderCategories = () => (
-    <View style={styles.categoriesWrapper}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
-        {['All', ...categories].map((cat, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[styles.categoryItem, (activeTopFilter === cat || (!activeTopFilter && cat === 'All')) && styles.activeCategoryItem]}
-            onPress={() => setActiveTopFilter(cat === 'All' ? null : cat)}
-          >
-            <Text style={[styles.categoryText, (activeTopFilter === cat || (!activeTopFilter && cat === 'All')) && styles.activeCategoryText]}>{cat}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
-  );
+  const renderCategories = () => {
+    const categoryList = Array.from(new Set(['All', ...categories]));
+    return (
+      <View style={styles.categoriesWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+          {categoryList.map((cat, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[styles.categoryItem, (activeTopFilter === cat || (!activeTopFilter && cat === 'All')) && styles.activeCategoryItem]}
+              onPress={() => setActiveTopFilter(cat === 'All' ? null : cat)}
+            >
+              <Text style={[styles.categoryText, (activeTopFilter === cat || (!activeTopFilter && cat === 'All')) && styles.activeCategoryText]}>{cat}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
 
   const renderHorizontalSection = () => {
     const displayItems = recentlyViewed.length > 0 ? recentlyViewed : products.slice(0, 5);
@@ -169,31 +205,6 @@ const HomeScreen = ({ navigation }: any) => {
     </TouchableOpacity>
   ), [colors.white, navigation, styles]);
 
-  const renderProductList = () => (
-    <View style={styles.productListSection}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>
-          {activeTopFilter ? `${activeTopFilter} Collection` : 'Popular For You'}
-        </Text>
-        <TouchableOpacity><Text style={styles.seeAllText}>See All</Text></TouchableOpacity>
-      </View>
-      <View style={styles.productGrid}>
-        {displayProducts.length > 0 ? (
-          displayProducts.map((item, index) => (
-            <React.Fragment key={item.id || index}>
-              {renderProductItem({ item })}
-            </React.Fragment>
-          ))
-        ) : (
-          <View style={{ flex: 1, alignItems: 'center', paddingVertical: 40, width: '100%' }}>
-            <Icon name="toy-brick-outline" size={60} color={colors.lightGray} />
-            <Text style={{ ...FONTS.body, color: colors.gray, marginTop: 10 }}>No toys found</Text>
-          </View>
-        )}
-      </View>
-    </View>
-  );
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={colors.background} />
@@ -224,14 +235,14 @@ const HomeScreen = ({ navigation }: any) => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListHeaderComponent={
           <>
-            {renderTopMenu()}
             <HomeHeader
               user={user}
               onLocationPress={() => navigation.navigate('ProfileTab', { screen: 'Address' })}
             />
             {renderSearchBar()}
-            {renderCategories()}
             <BannerCarousel banners={banners as Banner[]} />
+            {renderTopMenu()}
+            {renderCategories()}
             {renderHorizontalSection()}
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>
@@ -264,10 +275,159 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
   },
   listContent: {
     paddingTop: insets.top,
+    paddingBottom: 100,
   },
   columnWrapper: {
     justifyContent: 'space-between',
     paddingHorizontal: 15,
+  },
+  topMenuContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 10,
+    marginTop: 15,
+    marginBottom: 5,
+    width: '100%',
+  },
+  topMenuItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  topMenuIconBg: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+    ...SHADOWS.light,
+  },
+  topMenuText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.textSecondary,
+  },
+  searchSection: {
+    paddingHorizontal: 20,
+    marginVertical: 15,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.card,
+    borderRadius: 15,
+    paddingHorizontal: 15,
+    height: 55,
+    ...SHADOWS.light,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 10,
+    ...FONTS.body,
+    color: colors.text,
+  },
+  categoriesWrapper: {
+    marginBottom: 15,
+  },
+  categoryScroll: {
+    paddingLeft: 20,
+    paddingRight: 10,
+  },
+  categoryItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: colors.card,
+    marginRight: 12,
+    ...SHADOWS.light,
+    borderWidth: 1,
+    borderColor: colors.border,
+    minWidth: 70,
+    alignItems: 'center',
+  },
+  activeCategoryItem: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  categoryText: {
+    ...FONTS.body,
+    fontWeight: '700',
+    color: colors.textSecondary,
+  },
+  activeCategoryText: {
+    color: colors.white,
+  },
+  sectionContainer: {
+    marginVertical: 15,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 15,
+  },
+  sectionTitle: {
+    ...FONTS.h2,
+    fontSize: 18,
+    color: colors.text,
+  },
+  seeAllText: {
+    ...FONTS.body,
+    color: colors.primary,
+    fontWeight: '700',
+  },
+  horizontalScroll: {
+    paddingLeft: 20,
+  },
+  modernCard: {
+    width: 160,
+    marginRight: 15,
+  },
+  modernCardImageBg: {
+    width: 160,
+    height: 160,
+    backgroundColor: colors.lightGray,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  modernCardImage: {
+    width: '80%',
+    height: '80%',
+    resizeMode: 'contain',
+  },
+  priceTag: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: colors.white,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    ...SHADOWS.light,
+  },
+  priceTagText: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: colors.primary,
+  },
+  modernCardName: {
+    marginTop: 10,
+    ...FONTS.body,
+    fontWeight: '700',
+    color: colors.text,
+    textAlign: 'center',
+  },
+  modernCardPlaceholder: {
+    width: 160,
+    height: 160,
+    backgroundColor: colors.lightGray,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
   },
   gridProductCard: {
     width: '48%',

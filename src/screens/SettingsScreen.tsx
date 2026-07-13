@@ -6,7 +6,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store';
 import { toggleDarkMode, toggleNotifications } from '../redux/slices/configSlice';
+import { logoutUser } from '../redux/slices/authSlice';
 import { showToast } from '../utils/toastService';
+import apiClient from '../api/apiClient';
 
 import { useTheme } from '../hooks/useTheme';
 
@@ -29,7 +31,7 @@ const SettingsScreen = ({ navigation }: any) => {
   const handleDeleteAccount = () => {
     Alert.alert(
       'Delete Account',
-      'This action is permanent and cannot be undone. Are you sure?',
+      'Are you sure you want to delete your account? This action cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -37,11 +39,11 @@ const SettingsScreen = ({ navigation }: any) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              // await apiClient.delete('/auth/profile');
-              // dispatch(logout());
-              showToast('Account deleted successfully', 'info');
+              await apiClient.delete('/users/profile');
+              dispatch(logoutUser());
+              showToast('Account deleted successfully', 'success');
             } catch (error) {
-              showToast('Failed to delete account', 'error');
+              showToast('Failed to delete account. Please try again.', 'error');
             }
           }
         }

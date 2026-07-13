@@ -17,6 +17,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import api from "../../services/apiService";
 
 export default function DashboardLayout({
   children,
@@ -29,34 +30,35 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const userInfoRaw = localStorage.getItem("userInfo");
+    const verifySession = async () => {
+      const userInfoRaw = localStorage.getItem("userInfo");
 
-    if (!userInfoRaw) {
-      router.replace("/login");
-      return;
-    }
-
-    try {
-      const userInfo = JSON.parse(userInfoRaw);
-      if (!userInfo?.token || userInfo?.user?.role !== "admin") {
-        localStorage.removeItem("userInfo");
+      if (!userInfoRaw) {
         router.replace("/login");
         return;
       }
 
-      const [, payload] = userInfo.token.split(".");
-      const decoded = JSON.parse(atob(payload));
-      if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+      try {
+        const userInfo = JSON.parse(userInfoRaw);
+        if (!userInfo?.token) {
+          localStorage.removeItem("userInfo");
+          router.replace("/login");
+          return;
+        }
+
+        // SECURITY FIX: Verify session with backend instead of just decoding JWT locally
+        const res = await api.get("/auth/verify");
+        if (res.data?.user?.role !== "admin") {
+          throw new Error("Unauthorized: Admin access required");
+        }
+        setIsVerified(true);
+      } catch (error) {
         localStorage.removeItem("userInfo");
         router.replace("/login");
-        return;
       }
+    };
 
-      setIsVerified(true);
-    } catch {
-      localStorage.removeItem("userInfo");
-      router.replace("/login");
-    }
+    verifySession();
   }, [router]);
 
   // Close sidebar on route change (mobile nav)
@@ -95,10 +97,12 @@ export default function DashboardLayout({
 
       <nav className="flex-1 space-y-2">
         {navItems.map((item) => {
+          // Robust path highlighting
+          const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
           const isActive =
             item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
+              ? pathname === basePath + "/" || pathname === basePath
+              : pathname.startsWith(basePath + item.href);
           return (
             <Link
               key={item.name}

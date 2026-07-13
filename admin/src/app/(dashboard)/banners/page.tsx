@@ -19,6 +19,7 @@ export default function BannersPage() {
   const [banners, setBanners] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const [newBanner, setNewBanner] = useState({
     title: "",
@@ -32,11 +33,10 @@ export default function BannersPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewBanner({ ...newBanner, image: reader.result as string });
-      };
-      reader.readAsDataURL(file);
+      setImageFile(file);
+      // Generate a local preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setNewBanner({ ...newBanner, image: previewUrl });
     }
   };
 
@@ -55,14 +55,25 @@ export default function BannersPage() {
     }
   };
 
+  const uploadBannerImage = async (file: File): Promise<string> => {
+    const form = new FormData();
+    form.append("image", file);
+    const { data } = await api.post("/upload", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return data.url;
+  };
+
   const handleCreateBanner = async () => {
-    if (!newBanner.title || !newBanner.subtitle || !newBanner.image) {
-      window.alert("Please fill all fields including the image");
+    if (!newBanner.title || !newBanner.subtitle || !imageFile) {
+      window.alert("Please fill all fields including the image file");
       return;
     }
     setIsSubmitting(true);
     try {
-      await api.post("/config/banners", newBanner);
+      const imageUrl = await uploadBannerImage(imageFile);
+      const bannerToCreate = { ...newBanner, image: imageUrl };
+      await api.post("/config/banners", bannerToCreate);
       setShowAddModal(false);
       setNewBanner({
         title: "",
@@ -72,6 +83,7 @@ export default function BannersPage() {
         icon: "gift",
         isActive: true,
       });
+      setImageFile(null);
       fetchBanners();
     } catch (_error) {
       window.alert("Failed to create banner");

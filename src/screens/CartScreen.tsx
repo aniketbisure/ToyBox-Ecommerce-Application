@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../redux/store';
@@ -9,9 +9,12 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CustomButton from '../components/CustomButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Skeleton from '../components/Skeleton';
+import { useTheme } from '../hooks/useTheme';
 
 const CartScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const dispatch = useDispatch();
   const { items, totalAmount } = useSelector((state: RootState) => state.cart);
 
@@ -71,7 +74,7 @@ const CartScreen = ({ navigation }: any) => {
             style={styles.removeBtn}
             onPress={() => dispatch(removeFromCart(item.id))}
           >
-            <Icon name="trash-can-outline" size={20} color={COLORS.error} />
+            <Icon name="trash-can-outline" size={20} color={colors.error} />
           </TouchableOpacity>
         </View>
         <Text style={styles.itemCategory}>Qty: {item.quantity}</Text>
@@ -83,14 +86,14 @@ const CartScreen = ({ navigation }: any) => {
               style={styles.quantityBtn}
               onPress={() => item.quantity > 1 && dispatch(updateQuantity({ id: item.id, quantity: item.quantity - 1 }))}
             >
-              <Icon name="minus" size={14} color={COLORS.text} />
+              <Icon name="minus" size={14} color={colors.text} />
             </TouchableOpacity>
             <Text style={styles.quantityText}>{item.quantity}</Text>
             <TouchableOpacity
               style={styles.quantityBtn}
               onPress={() => dispatch(updateQuantity({ id: item.id, quantity: item.quantity + 1 }))}
             >
-              <Icon name="plus" size={14} color={COLORS.text} />
+              <Icon name="plus" size={14} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
@@ -112,7 +115,7 @@ const CartScreen = ({ navigation }: any) => {
       {items.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={styles.emptyIconContainer}>
-            <Icon name="cart-outline" size={80} color={COLORS.lightGray} />
+            <Icon name="cart-outline" size={80} color={colors.lightGray} />
           </View>
           <Text style={styles.emptyTitle}>Your Cart is Empty</Text>
           <Text style={styles.emptySubtitle}>Looks like you haven't added anything to your cart yet.</Text>
@@ -159,14 +162,14 @@ const CartScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   skeletonItem: {
     flexDirection: 'row',
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     borderRadius: SIZES.radius,
     padding: 12,
     marginBottom: 16,
@@ -183,10 +186,11 @@ const styles = StyleSheet.create({
   title: {
     ...FONTS.h1,
     fontSize: 28,
+    color: colors.text,
   },
   clearText: {
     ...FONTS.body,
-    color: COLORS.primary,
+    color: colors.primary,
     fontWeight: '600',
   },
   list: {
@@ -195,7 +199,7 @@ const styles = StyleSheet.create({
   },
   cartItem: {
     flexDirection: 'row',
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     borderRadius: 20,
     padding: 15,
     marginBottom: 16,
@@ -204,7 +208,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: 85,
     height: 85,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: colors.lightGray,
     borderRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
@@ -227,13 +231,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     flex: 1,
     marginRight: 5,
+    color: colors.text,
   },
   removeBtn: {
     padding: 5,
   },
   itemCategory: {
     ...FONTS.caption,
-    color: COLORS.gray,
+    color: colors.gray,
     marginBottom: 10,
   },
   itemFooter: {
@@ -243,20 +248,20 @@ const styles = StyleSheet.create({
   },
   itemPrice: {
     ...FONTS.h3,
-    color: COLORS.primary,
+    color: colors.primary,
     fontSize: 16,
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.lightGray,
     borderRadius: 12,
     padding: 4,
   },
   quantityBtn: {
     width: 32,
     height: 32,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
@@ -267,6 +272,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginHorizontal: 12,
     fontSize: 14,
+    color: colors.text,
   },
   emptyContainer: {
     flex: 1,
@@ -278,7 +284,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 30,
@@ -287,10 +293,11 @@ const styles = StyleSheet.create({
   emptyTitle: {
     ...FONTS.h2,
     marginBottom: 10,
+    color: colors.text,
   },
   emptySubtitle: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
     textAlign: 'center',
     marginBottom: 30,
   },
@@ -298,7 +305,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   summaryContainer: {
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     padding: 25,
@@ -311,29 +318,32 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
   },
   summaryValue: {
     ...FONTS.body,
     fontWeight: '700',
-    color: COLORS.text,
+    color: colors.text,
   },
   divider: {
     height: 1,
-    backgroundColor: COLORS.lightGray,
+    backgroundColor: colors.lightGray,
     marginVertical: 15,
   },
   totalLabel: {
     ...FONTS.h3,
     fontSize: 20,
+    color: colors.text,
   },
   totalValue: {
     ...FONTS.h2,
-    color: COLORS.primary,
+    color: colors.primary,
   },
   checkoutBtn: {
     marginTop: 25,
   },
 });
+
+export default CartScreen;
 
 export default CartScreen;

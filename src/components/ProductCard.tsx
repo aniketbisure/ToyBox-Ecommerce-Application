@@ -72,7 +72,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({
       </View>
     </TouchableOpacity>
   );
-};
+});
 
 const createStyles = (colors: any) => StyleSheet.create({
   container: {

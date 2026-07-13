@@ -22,7 +22,7 @@ export const protect = (req: AuthRequest, res: Response, next: NextFunction): vo
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
     req.user = { id: decoded.id, role: decoded.role, name: decoded.name };
     next();
   } catch (error) {

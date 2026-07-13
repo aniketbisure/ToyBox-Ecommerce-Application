@@ -3,9 +3,13 @@ import apiClient from '../../api/apiClient';
 
 interface Banner {
   id: string;
+  _id?: string;
   image: string;
   title: string;
   subtitle: string;
+  color?: string;
+  icon?: string;
+  isActive: boolean;
   link?: string;
 }
 

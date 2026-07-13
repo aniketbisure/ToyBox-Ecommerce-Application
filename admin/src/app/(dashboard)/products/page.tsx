@@ -10,8 +10,7 @@ import api from "../../../services/apiService";
 export default function ProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
-  const [_loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [_pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
 
   useEffect(() => {
@@ -129,7 +128,7 @@ export default function ProductsPage() {
                 </td>
                 <td className="px-6 lg:px-8 py-4 lg:py-5">
                   <span className="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                    {product.category}
+                    {product.subCategory || product.mainCategory || "—"}
                   </span>
                 </td>
                 <td className="px-6 lg:px-8 py-4 lg:py-5 font-black text-dark text-sm">
@@ -208,7 +207,7 @@ export default function ProductsPage() {
                 </p>
                 <div className="flex flex-wrap gap-2 items-center">
                   <span className="bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">
-                    {product.category}
+                    {product.subCategory || product.mainCategory || "—"}
                   </span>
                   <span
                     className={`flex items-center gap-1 text-xs font-bold ${
@@ -250,85 +249,6 @@ export default function ProductsPage() {
           </motion.div>
         ))}
       </div>
-
-      {/* Add Product Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl"
-          >
-            <div className="p-6 lg:p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="text-xl lg:text-2xl font-black">Add New Toy</h3>
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="text-gray-400 hover:text-dark transition-all"
-              >
-                <Trash2 size={22} />
-              </button>
-            </div>
-
-            <div className="p-6 lg:p-8 grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
-              <div className="sm:col-span-2 space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                  Product Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Superhero Action Figure"
-                  className="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:bg-white focus:ring-2 ring-primary/20 transition-all border-none"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                  Category
-                </label>
-                <select className="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:bg-white focus:ring-2 ring-primary/20 transition-all border-none appearance-none">
-                  <option>Plush</option>
-                  <option>Building</option>
-                  <option>Electronics</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                  Price (₹)
-                </label>
-                <input
-                  type="number"
-                  placeholder="0.00"
-                  className="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:bg-white focus:ring-2 ring-primary/20 transition-all border-none"
-                />
-              </div>
-
-              <div className="sm:col-span-2 space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-                  Description
-                </label>
-                <textarea
-                  rows={4}
-                  placeholder="Describe the toy..."
-                  className="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:bg-white focus:ring-2 ring-primary/20 transition-all border-none"
-                />
-              </div>
-            </div>
-
-            <div className="p-6 lg:p-8 bg-gray-50 border-t border-gray-100 flex gap-4">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="flex-1 py-3 lg:py-4 font-bold text-gray-500 hover:bg-gray-100 rounded-2xl transition-all"
-              >
-                Cancel
-              </button>
-              <button className="flex-[2] bg-primary text-white py-3 lg:py-4 rounded-2xl font-black tracking-wide shadow-lg shadow-primary/30 hover:bg-primary/90 active:scale-95 transition-all">
-                SAVE PRODUCT
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
     </div>
   );
 }

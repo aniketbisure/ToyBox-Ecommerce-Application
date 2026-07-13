@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../redux/store';
@@ -10,9 +10,12 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CustomButton from '../components/CustomButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Skeleton from '../components/Skeleton';
+import { useTheme } from '../hooks/useTheme';
 
 const WishlistScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const dispatch = useDispatch();
   const { items } = useSelector((state: RootState) => state.wishlist);
   const loading = false; // Add a placeholder loading state or use one from Redux if available
@@ -52,7 +55,7 @@ const WishlistScreen = ({ navigation }: any) => {
               showToast('Added to cart', 'success');
             }}
           >
-            <Icon name="cart-plus" size={20} color={COLORS.white} />
+            <Icon name="cart-plus" size={20} color={colors.white} />
           </TouchableOpacity>
         </View>
       </View>
@@ -60,7 +63,7 @@ const WishlistScreen = ({ navigation }: any) => {
         style={styles.removeBtn}
         onPress={() => dispatch(toggleWishlist(item))}
       >
-        <Icon name="heart" size={24} color={COLORS.primary} />
+        <Icon name="heart" size={24} color={colors.primary} />
       </TouchableOpacity>
     </View>
   );
@@ -78,7 +81,7 @@ const WishlistScreen = ({ navigation }: any) => {
         ) : (
           <View style={styles.emptyContainer}>
             <View style={styles.emptyIconContainer}>
-              <Icon name="heart-outline" size={80} color={COLORS.lightGray} />
+              <Icon name="heart-outline" size={80} color={colors.lightGray} />
             </View>
             <Text style={styles.emptyTitle}>Your Wishlist is Empty</Text>
             <Text style={styles.emptySubtitle}>Tap the heart icon on any toy to save it for later!</Text>
@@ -102,10 +105,10 @@ const WishlistScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   header: {
     paddingHorizontal: 25,
@@ -115,10 +118,11 @@ const styles = StyleSheet.create({
   title: {
     ...FONTS.h1,
     fontSize: 28,
+    color: colors.text,
   },
   count: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
     marginTop: -4,
   },
   list: {
@@ -128,7 +132,7 @@ const styles = StyleSheet.create({
   skeletonCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     borderRadius: SIZES.radius,
     padding: 12,
     marginBottom: 16,
@@ -137,7 +141,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     borderRadius: 20,
     padding: 15,
     marginBottom: 16,
@@ -147,7 +151,7 @@ const styles = StyleSheet.create({
     width: 85,
     height: 85,
     borderRadius: 15,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: colors.lightGray,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -161,7 +165,7 @@ const styles = StyleSheet.create({
   },
   category: {
     ...FONTS.caption,
-    color: COLORS.gray,
+    color: colors.gray,
     fontWeight: '600',
     textTransform: 'uppercase',
     fontSize: 10,
@@ -171,6 +175,7 @@ const styles = StyleSheet.create({
     ...FONTS.h3,
     fontSize: 15,
     marginBottom: 8,
+    color: colors.text,
   },
   priceRow: {
     flexDirection: 'row',
@@ -179,11 +184,11 @@ const styles = StyleSheet.create({
   },
   price: {
     ...FONTS.h2,
-    color: COLORS.primary,
+    color: colors.primary,
     fontSize: 18,
   },
   addCartBtn: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: colors.secondary,
     width: 36,
     height: 36,
     borderRadius: 10,
@@ -206,7 +211,7 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 30,
@@ -215,10 +220,11 @@ const styles = StyleSheet.create({
   emptyTitle: {
     ...FONTS.h2,
     marginBottom: 10,
+    color: colors.text,
   },
   emptySubtitle: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
     textAlign: 'center',
     marginBottom: 30,
   },
@@ -226,5 +232,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 });
+
+export default WishlistScreen;
 
 export default WishlistScreen;

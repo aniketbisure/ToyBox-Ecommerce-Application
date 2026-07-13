@@ -94,7 +94,7 @@ export const addOrderItems = async (req: AuthRequest, res: Response) => {
 export const verifyPayment = async (req: AuthRequest, res: Response) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
-  const secret = process.env.RAZORPAY_KEY_SECRET || 'your_secret';
+  const secret = process.env.RAZORPAY_KEY_SECRET!;
   const hmac = crypto.createHmac('sha256', secret);
   hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
   const generated_signature = hmac.digest('hex');
@@ -151,7 +151,11 @@ export const verifyPayment = async (req: AuthRequest, res: Response) => {
 };
 
 export const razorpayWebhook = async (req: any, res: Response) => {
-  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || 'your_webhook_secret';
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    res.status(400).send('Webhook secret not configured');
+    return;
+  }
   const signature = req.headers['x-razorpay-signature'] as string;
 
   // SECURITY FIX: Use rawBody for signature verification
@@ -256,7 +260,11 @@ export const getOrderById = async (req: AuthRequest, res: Response) => {
     }
 
     // Only allow the order owner or an admin to view it
-    const isOwner = order.user && order.user.toString() === req.user?.id;
+    const isOwner = order.user && (
+      typeof order.user === 'object'
+        ? (order.user as any)._id?.toString() === req.user?.id
+        : order.user.toString() === req.user?.id
+    );
     const isAdmin = req.user?.role === 'admin';
 
     if (!isOwner && !isAdmin) {

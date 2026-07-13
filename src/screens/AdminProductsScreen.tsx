@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -18,9 +18,12 @@ import { moderateScale } from '../utils/responsive';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { showToast } from '../utils/toastService';
+import { useTheme } from '../hooks/useTheme';
 
 const AdminProductsScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const dispatch = useDispatch<AppDispatch>();
   const { products, loading } = useSelector((state: RootState) => state.products);
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,7 +63,7 @@ const AdminProductsScreen = ({ navigation }: any) => {
       <Image source={{ uri: item.image }} style={styles.productImage} />
       <View style={styles.productInfo}>
         <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
-        <Text style={styles.productCategory}>{item.category}</Text>
+        <Text style={styles.productCategory}>{item.mainCategory || item.category}</Text>
         <Text style={styles.productPrice}>₹{item.price}</Text>
       </View>
       <View style={styles.actionButtons}>
@@ -84,29 +87,31 @@ const AdminProductsScreen = ({ navigation }: any) => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Icon name="arrow-left" size={26} color={COLORS.text} />
+          <Icon name="arrow-left" size={26} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Manage Products</Text>
         <TouchableOpacity
           style={styles.addBtn}
           onPress={() => navigation.navigate('EditProduct', { product: null })}
         >
-          <Icon name="plus" size={24} color={COLORS.white} />
+          <Icon name="plus" size={24} color={colors.white} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.searchContainer}>
-        <Icon name="magnify" size={22} color={COLORS.gray} />
+        <Icon name="magnify" size={22} color={colors.gray} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search products..."
+          placeholderTextColor={colors.gray}
           value={searchQuery}
           onChangeText={setSearchQuery}
+          color={colors.text}
         />
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 50 }} />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 50 }} />
       ) : (
         <FlatList
           data={filteredProducts}
@@ -116,7 +121,7 @@ const AdminProductsScreen = ({ navigation }: any) => {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Icon name="package-variant" size={60} color={COLORS.lightGray} />
+              <Icon name="package-variant" size={60} color={colors.lightGray} />
               <Text style={styles.emptyText}>No products found</Text>
             </View>
           }
@@ -126,10 +131,10 @@ const AdminProductsScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -144,9 +149,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     ...FONTS.h2,
     fontSize: moderateScale(20),
+    color: colors.text,
   },
   addBtn: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primary,
     width: moderateScale(40),
     height: moderateScale(40),
     borderRadius: 12,
@@ -157,7 +163,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     marginHorizontal: moderateScale(20),
     paddingHorizontal: moderateScale(15),
     borderRadius: 12,
@@ -177,7 +183,7 @@ const styles = StyleSheet.create({
   productCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     padding: moderateScale(12),
     borderRadius: 15,
     marginBottom: moderateScale(15),
@@ -187,7 +193,7 @@ const styles = StyleSheet.create({
     width: moderateScale(60),
     height: moderateScale(60),
     borderRadius: 10,
-    backgroundColor: COLORS.lightGray,
+    backgroundColor: colors.lightGray,
   },
   productInfo: {
     flex: 1,
@@ -196,14 +202,15 @@ const styles = StyleSheet.create({
   productName: {
     ...FONTS.h3,
     fontSize: moderateScale(15),
+    color: colors.text,
   },
   productCategory: {
     ...FONTS.caption,
-    color: COLORS.gray,
+    color: colors.gray,
   },
   productPrice: {
     ...FONTS.h3,
-    color: COLORS.primary,
+    color: colors.primary,
     fontSize: moderateScale(14),
     marginTop: 2,
   },
@@ -224,7 +231,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
     marginTop: 10,
   }
 });

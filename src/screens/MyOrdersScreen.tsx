@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,10 +14,14 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import apiClient from '../api/apiClient';
 import { showToast } from '../utils/toastService';
+import { useTheme } from '../hooks/useTheme';
+import { Order } from '../types';
 
 const MyOrdersScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
-  const [orders, setOrders] = useState([]);
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,31 +43,31 @@ const MyOrdersScreen = ({ navigation }: any) => {
   const StatusTimeline = ({ delivered }: { delivered: boolean }) => (
     <View style={styles.timelineContainer}>
       <View style={styles.timelineItem}>
-        <View style={[styles.timelineDot, { backgroundColor: COLORS.success }]} />
+        <View style={[styles.timelineDot, { backgroundColor: colors.success }]} />
         <Text style={styles.timelineText}>Placed</Text>
       </View>
-      <View style={[styles.timelineLine, { backgroundColor: COLORS.success }]} />
+      <View style={[styles.timelineLine, { backgroundColor: colors.success }]} />
       <View style={styles.timelineItem}>
-        <View style={[styles.timelineDot, { backgroundColor: COLORS.success }]} />
+        <View style={[styles.timelineDot, { backgroundColor: colors.success }]} />
         <Text style={styles.timelineText}>Packed</Text>
       </View>
-      <View style={[styles.timelineLine, { backgroundColor: delivered ? COLORS.success : COLORS.lightGray }]} />
+      <View style={[styles.timelineLine, { backgroundColor: delivered ? colors.success : colors.lightGray }]} />
       <View style={styles.timelineItem}>
-        <View style={[styles.timelineDot, { backgroundColor: delivered ? COLORS.success : COLORS.lightGray }]} />
+        <View style={[styles.timelineDot, { backgroundColor: delivered ? colors.success : colors.lightGray }]} />
         <Text style={styles.timelineText}>Shipped</Text>
       </View>
     </View>
   );
 
-  const renderOrderItem = ({ item }: any) => (
+  const renderOrderItem = ({ item }: { item: Order }) => (
     <View style={styles.orderCard}>
       <View style={styles.orderHeader}>
         <View>
           <Text style={styles.orderId}>Order #{item._id.substring(item._id.length - 8).toUpperCase()}</Text>
           <Text style={styles.dateText}>{new Date(item.createdAt).toLocaleDateString()}</Text>
         </View>
-        <View style={[styles.statusBadge, { backgroundColor: item.isDelivered ? '#E8F5E9' : '#FFF3E0' }]}>
-          <Text style={[styles.statusText, { color: item.isDelivered ? '#2E7D32' : '#EF6C00' }]}>
+        <View style={[styles.statusBadge, { backgroundColor: item.isDelivered ? (colors.isDarkMode ? '#1B5E20' : '#E8F5E9') : (colors.isDarkMode ? '#E65100' : '#FFF3E0') }]}>
+          <Text style={[styles.statusText, { color: item.isDelivered ? (colors.isDarkMode ? '#81C784' : '#2E7D32') : (colors.isDarkMode ? '#FFB74D' : '#EF6C00') }]}>
             {item.isDelivered ? 'Delivered' : 'Processing'}
           </Text>
         </View>
@@ -93,14 +97,14 @@ const MyOrdersScreen = ({ navigation }: any) => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Icon name="arrow-left" size={26} color={COLORS.text} />
+          <Icon name="arrow-left" size={26} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Orders</Text>
         <View style={{ width: 40 }} />
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 50 }} />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 50 }} />
       ) : (
         <FlatList
           data={orders}
@@ -110,7 +114,7 @@ const MyOrdersScreen = ({ navigation }: any) => {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Icon name="package-variant" size={80} color={COLORS.lightGray} />
+              <Icon name="package-variant" size={80} color={colors.lightGray} />
               <Text style={styles.emptyText}>You haven't placed any orders yet</Text>
               <TouchableOpacity
                 style={styles.shopBtn}
@@ -126,10 +130,10 @@ const MyOrdersScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -144,13 +148,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     ...FONTS.h2,
     fontSize: moderateScale(20),
+    color: colors.text,
   },
   listContent: {
     paddingHorizontal: moderateScale(20),
     paddingBottom: moderateScale(40),
   },
   orderCard: {
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     borderRadius: 20,
     padding: moderateScale(15),
     marginBottom: moderateScale(15),
@@ -165,10 +170,11 @@ const styles = StyleSheet.create({
   orderId: {
     ...FONTS.h3,
     fontSize: moderateScale(14),
+    color: colors.text,
   },
   divider: {
     height: 1,
-    backgroundColor: COLORS.lightGray,
+    backgroundColor: colors.lightGray,
     marginVertical: 12,
   },
   timelineContainer: {
@@ -191,6 +197,7 @@ const styles = StyleSheet.create({
     ...FONTS.caption,
     fontSize: 9,
     fontWeight: '700',
+    color: colors.text,
   },
   timelineLine: {
     flex: 1,
@@ -220,33 +227,35 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 5,
-    backgroundColor: COLORS.lightGray,
+    backgroundColor: colors.lightGray,
   },
   productName: {
     flex: 1,
     marginLeft: 10,
     ...FONTS.body,
     fontSize: 12,
+    color: colors.text,
   },
   productQty: {
     ...FONTS.caption,
     marginLeft: 10,
+    color: colors.gray,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     borderTopWidth: 1,
-    borderTopColor: COLORS.lightGray,
+    borderTopColor: colors.lightGray,
     paddingTop: 10,
   },
   dateText: {
     ...FONTS.caption,
-    color: COLORS.gray,
+    color: colors.gray,
   },
   totalText: {
     ...FONTS.h3,
     fontSize: 14,
-    color: COLORS.primary,
+    color: colors.primary,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -254,19 +263,19 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
     marginTop: 15,
     marginBottom: 20,
   },
   shopBtn: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primary,
     paddingHorizontal: 25,
     paddingVertical: 12,
     borderRadius: 15,
   },
   shopBtnText: {
     ...FONTS.h3,
-    color: COLORS.white,
+    color: colors.isDarkMode ? '#121212' : '#FFFFFF',
   }
 });
 

@@ -21,8 +21,8 @@ const MainTabNavigator = () => {
           let iconName: string = 'home';
 
           if (route.name === 'HomeTab') iconName = 'home-outline';
-          else if (route.name === 'Categories') iconName = 'apps';
-          else if (route.name === 'Wishlist') iconName = 'heart-outline';
+          else if (route.name === 'CategoriesTab') iconName = 'apps';
+          else if (route.name === 'WishlistTab') iconName = 'heart-outline';
           else if (route.name === 'CartTab') iconName = 'cart-outline';
           else if (route.name === 'ProfileTab') iconName = 'account-outline';
 
@@ -54,11 +54,15 @@ const MainTabNavigator = () => {
         options={{ tabBarLabel: 'Home' }}
       />
       <Tab.Screen
-        name="Categories"
+        name="CategoriesTab"
         component={CategoriesScreen}
         options={{ tabBarLabel: 'Categories' }}
       />
-      <Tab.Screen name="Wishlist" component={WishlistScreen} />
+      <Tab.Screen
+        name="WishlistTab"
+        component={WishlistScreen}
+        options={{ tabBarLabel: 'Wishlist' }}
+      />
       <Tab.Screen
         name="CartTab"
         component={CartStack}

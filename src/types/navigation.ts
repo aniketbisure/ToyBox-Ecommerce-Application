@@ -21,10 +21,18 @@ export type HomeStackParamList = {
   Search: undefined;
 };
 
+export type CartStackParamList = {
+  CartScreen: undefined;
+  Checkout: undefined;
+  OrderSuccess: undefined;
+};
+
 export type ProfileStackParamList = {
-  Profile: undefined;
+  ProfileMain: undefined;
   MyOrders: undefined;
   Address: undefined;
+  Payments: undefined;
+  Reviews: undefined;
   EditProfile: undefined;
   Settings: undefined;
 };
@@ -48,3 +56,4 @@ export type RootStackParamList = {
 
 export type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 export type RegisterScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Register'>;
+export type ProfileStackNavigationProp = StackNavigationProp<ProfileStackParamList>;

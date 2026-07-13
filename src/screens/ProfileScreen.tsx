@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../redux/slices/authSlice';
-import { RootState } from '../redux/store';
+import { logoutUser } from '../redux/slices/authSlice';
+import { RootState, AppDispatch } from '../redux/store';
 import { COLORS, FONTS, SHADOWS } from '../constants/theme';
 import { moderateScale } from '../utils/responsive';
 import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList, ProfileStackNavigationProp } from '../types/navigation';
 import { showToast } from '../utils/toastService';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,7 +18,8 @@ import { useTheme } from '../hooks/useTheme';
 const ProfileScreen = () => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const profileNav = navigation as unknown as ProfileStackNavigationProp;
   const { colors, isDarkMode } = useTheme();
   const user = useSelector((state: RootState) => state.auth.user);
   const [orderCount, setOrderCount] = useState(0);
@@ -59,17 +62,17 @@ const ProfileScreen = () => {
       style={styles.optionItem}
       onPress={() => {
         if (option.screen === 'AdminDashboard') {
-          navigation.navigate('Admin' as never);
+          navigation.navigate('Admin', { screen: 'AdminDashboard' });
         } else if (option.screen === 'MyOrders') {
-          navigation.navigate('MyOrders' as never);
+          profileNav.navigate('MyOrders');
         } else if (option.screen === 'Address') {
-          navigation.navigate('Address' as never);
+          profileNav.navigate('Address');
         } else if (option.screen === 'Payments') {
-          navigation.navigate('Payments' as never);
+          profileNav.navigate('Payments');
         } else if (option.screen === 'Reviews') {
-          navigation.navigate('Reviews' as never);
+          profileNav.navigate('Reviews');
         } else if (option.screen === 'Settings') {
-          navigation.navigate('Settings' as never);
+          profileNav.navigate('Settings');
         } else {
           showToast(`${option.name} feature is coming soon!`, 'info');
         }
@@ -93,7 +96,7 @@ const ProfileScreen = () => {
           text: 'Logout',
           style: 'destructive',
           onPress: () => {
-            dispatch(logout());
+            (dispatch as AppDispatch)(logoutUser());
             showToast('Logged out successfully', 'info');
           }
         },
@@ -110,7 +113,7 @@ const ProfileScreen = () => {
           <Text style={styles.headerTitle}>My Profile</Text>
           <TouchableOpacity
             style={styles.headerIconBtn}
-            onPress={() => navigation.navigate('Settings' as never)}
+            onPress={() => profileNav.navigate('Settings')}
           >
             <Icon name="cog-outline" size={24} color={colors.text} />
           </TouchableOpacity>
@@ -130,7 +133,7 @@ const ProfileScreen = () => {
             </View>
             <TouchableOpacity
               style={[styles.editProfileBtn, { backgroundColor: colors.primary + '15' }]}
-              onPress={() => navigation.navigate('EditProfile' as never)}
+              onPress={() => profileNav.navigate('EditProfile')}
             >
               <Text style={styles.editProfileText}>Edit</Text>
             </TouchableOpacity>

@@ -6,9 +6,24 @@ interface Product {
   name: string;
   description: string;
   price: number;
-  category: string;
+  listPrice?: number;
+  salePrice?: number;
+  category?: string;        // kept for backwards compat
+  subCategory?: string;
   image: string;
+  images?: string[];
   rating: number;
+  numReviews?: number;
+  reviews?: any[];
+  stock?: number;
+  brand?: string;
+  manufacturer?: string;
+  sku?: string;
+  minimumAge?: number;
+  ageRangeDescription?: string;
+  smallPartsWarning?: boolean;
+  safetyWarningText?: string;
+  isDeleted?: boolean;
 }
 
 interface ProductState {
