@@ -21,7 +21,7 @@ export default function LoginPage() {
     try {
       const { data } = await api.post("/auth/login", { email, password });
 
-      if (data.user.role !== 'admin') {
+      if (data.user.role !== "admin") {
         setError("Access denied: You are not an admin.");
         setLoading(false);
         return;
@@ -41,15 +41,19 @@ export default function LoginPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full"
+        className="w-full max-w-md"
       >
-        <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-primary/5 p-10 border border-gray-100">
-          <div className="flex flex-col items-center mb-10">
-            <div className="bg-primary p-4 rounded-3xl mb-4 shadow-lg shadow-primary/30">
-              <ShieldCheck className="text-white" size={40} />
+        <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl shadow-primary/5 p-8 sm:p-10 border border-gray-100">
+          <div className="flex flex-col items-center mb-8 sm:mb-10">
+            <div className="bg-primary p-3 sm:p-4 rounded-2xl sm:rounded-3xl mb-4 shadow-lg shadow-primary/30">
+              <ShieldCheck className="text-white" size={36} />
             </div>
-            <h1 className="text-3xl font-black tracking-tight">ToyBox <span className="text-primary">Admin</span></h1>
-            <p className="text-gray-400 font-medium mt-1">Authorized Personnel Only</p>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+              ToyBox <span className="text-primary">Admin</span>
+            </h1>
+            <p className="text-gray-400 font-medium mt-1 text-sm">
+              Authorized Personnel Only
+            </p>
           </div>
 
           {error ? (
@@ -58,33 +62,43 @@ export default function LoginPage() {
             </div>
           ) : null}
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-5 sm:space-y-6">
             <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+              <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">
+                Email Address
+              </label>
               <div className="relative">
-                <Mail className="absolute left-4 top-4 text-gray-300" size={20} />
+                <Mail
+                  className="absolute left-4 top-4 text-gray-300"
+                  size={18}
+                />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@toybox.com"
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl outline-none focus:bg-white focus:ring-2 ring-primary/20 border-2 border-transparent focus:border-primary/20 transition-all"
+                  className="w-full pl-11 pr-4 py-4 bg-gray-50 rounded-2xl outline-none focus:bg-white focus:ring-2 ring-primary/20 border-2 border-transparent focus:border-primary/20 transition-all text-sm"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Password</label>
+              <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">
+                Password
+              </label>
               <div className="relative">
-                <Lock className="absolute left-4 top-4 text-gray-300" size={20} />
+                <Lock
+                  className="absolute left-4 top-4 text-gray-300"
+                  size={18}
+                />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 rounded-2xl outline-none focus:bg-white focus:ring-2 ring-primary/20 border-2 border-transparent focus:border-primary/20 transition-all"
+                  className="w-full pl-11 pr-4 py-4 bg-gray-50 rounded-2xl outline-none focus:bg-white focus:ring-2 ring-primary/20 border-2 border-transparent focus:border-primary/20 transition-all text-sm"
                 />
               </div>
             </div>
@@ -92,22 +106,25 @@ export default function LoginPage() {
             <button
               disabled={loading}
               type="submit"
-              className="w-full bg-dark text-white py-5 rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-primary transition-all shadow-xl shadow-dark/10 active:scale-95 disabled:opacity-70"
+              className="w-full bg-dark text-white py-4 sm:py-5 rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-primary transition-all shadow-xl shadow-dark/10 active:scale-95 disabled:opacity-70 text-sm sm:text-base"
             >
               {loading ? (
-                <Loader2 className="animate-spin" size={24} />
+                <Loader2 className="animate-spin" size={22} />
               ) : (
                 <>
                   ENTER DASHBOARD
-                  <ArrowRight size={20} />
+                  <ArrowRight size={18} />
                 </>
               )}
             </button>
           </form>
         </div>
 
-        <p className="text-center text-gray-400 text-sm mt-8">
-          Problems logging in? <span className="text-primary font-bold cursor-pointer">Contact IT Support</span>
+        <p className="text-center text-gray-400 text-xs sm:text-sm mt-6 sm:mt-8">
+          Problems logging in?{" "}
+          <span className="text-primary font-bold cursor-pointer">
+            Contact IT Support
+          </span>
         </p>
       </motion.div>
     </div>

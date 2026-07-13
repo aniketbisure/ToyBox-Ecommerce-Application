@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, Trash2, ImageIcon, Layout, ToggleLeft, ToggleRight, Loader2 } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  ImageIcon,
+  Layout,
+  ToggleLeft,
+  ToggleRight,
+  Loader2,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import api from "../../../services/apiService";
@@ -18,7 +26,7 @@ export default function BannersPage() {
     image: "",
     color: "#FF6B6B",
     icon: "gift",
-    isActive: true
+    isActive: true,
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,7 +64,14 @@ export default function BannersPage() {
     try {
       await api.post("/config/banners", newBanner);
       setShowAddModal(false);
-      setNewBanner({ title: "", subtitle: "", image: "", color: "#FF6B6B", icon: "gift", isActive: true });
+      setNewBanner({
+        title: "",
+        subtitle: "",
+        image: "",
+        color: "#FF6B6B",
+        icon: "gift",
+        isActive: true,
+      });
       fetchBanners();
     } catch (_error) {
       window.alert("Failed to create banner");
@@ -66,17 +81,12 @@ export default function BannersPage() {
   };
 
   const toggleActive = async (id: string) => {
-    const banner = banners.find(b => b._id === id);
+    const banner = banners.find((b) => b._id === id);
     if (!banner) return;
     try {
-      // Use the dedicated delete + re-add approach isn't ideal, so we update
-      // the full banners array via a dedicated banners endpoint concept.
-      // Since the backend only has add/delete for banners, we delete and re-add with toggled state.
-      // Better: call a granular banner update route. For now, patch via config banners array.
-      const updatedBanners = banners.map(b =>
+      const updatedBanners = banners.map((b) =>
         b._id === id ? { ...b, isActive: !b.isActive } : b
       );
-      // POST to a bulk-update endpoint that only touches banners
       await api.put("/config/banners/bulk", { banners: updatedBanners });
       setBanners(updatedBanners);
     } catch (_error) {
@@ -88,7 +98,7 @@ export default function BannersPage() {
     if (window.confirm("Delete this banner?")) {
       try {
         await api.delete(`/config/banners/${id}`);
-        setBanners(banners.filter(b => b._id !== id));
+        setBanners(banners.filter((b) => b._id !== id));
       } catch (_error) {
         window.alert("Failed to delete banner");
       }
@@ -104,22 +114,28 @@ export default function BannersPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <header className="flex justify-between items-end">
+    <div className="space-y-5 lg:space-y-8">
+      {/* Header */}
+      <header className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-end">
         <div>
-          <h2 className="text-3xl font-black text-dark">Promotional Banners</h2>
-          <p className="text-gray-500 mt-1">Control the marketing carousel on the mobile app</p>
+          <h2 className="text-2xl lg:text-3xl font-black text-dark">
+            Promotional Banners
+          </h2>
+          <p className="text-gray-500 mt-1 text-sm lg:text-base">
+            Control the marketing carousel on the mobile app
+          </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="btn-primary flex items-center gap-2"
+          className="btn-primary flex items-center gap-2 self-start sm:self-auto text-sm"
         >
-          <Plus size={20} />
+          <Plus size={18} />
           Create New Banner
         </button>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {/* Banners Grid — 1 col mobile, 2 col md+ */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
         {banners.map((banner, i) => (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -129,9 +145,7 @@ export default function BannersPage() {
             className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 flex flex-col"
           >
             {/* Banner Preview */}
-            <div
-              className="h-40 p-8 flex flex-col justify-center relative overflow-hidden bg-gray-200"
-            >
+            <div className="h-36 lg:h-40 p-6 lg:p-8 flex flex-col justify-center relative overflow-hidden bg-gray-200">
               {banner.image ? (
                 <Image
                   src={banner.image}
@@ -141,32 +155,42 @@ export default function BannersPage() {
                 />
               ) : (
                 <div className="absolute -right-4 -bottom-4 opacity-20 rotate-12">
-                  <Layout size={120} color="gray" />
+                  <Layout size={100} color="gray" />
                 </div>
               )}
               <div className="absolute inset-0 bg-black/30" />
-              <h3 className="text-2xl font-black text-white relative z-10">{banner.title}</h3>
-              <p className="text-white/80 font-bold relative z-10">{banner.subtitle}</p>
+              <h3 className="text-xl lg:text-2xl font-black text-white relative z-10">
+                {banner.title}
+              </h3>
+              <p className="text-white/80 font-bold relative z-10 text-sm">
+                {banner.subtitle}
+              </p>
             </div>
 
             {/* Banner Controls */}
-            <div className="p-6 flex items-center justify-between">
-              <div className="flex items-center gap-6">
+            <div className="p-4 lg:p-6 flex items-center justify-between">
+              <div className="flex items-center gap-4 lg:gap-6">
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Status</span>
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                    Status
+                  </span>
                   <button
                     onClick={() => toggleActive(banner._id)}
                     className="flex items-center gap-2"
                   >
                     {banner.isActive ? (
                       <>
-                        <ToggleRight className="text-green-500" size={24} />
-                        <span className="text-sm font-bold text-green-600">Active</span>
+                        <ToggleRight className="text-green-500" size={22} />
+                        <span className="text-sm font-bold text-green-600">
+                          Active
+                        </span>
                       </>
                     ) : (
                       <>
-                        <ToggleLeft className="text-gray-300" size={24} />
-                        <span className="text-sm font-bold text-gray-400">Hidden</span>
+                        <ToggleLeft className="text-gray-300" size={22} />
+                        <span className="text-sm font-bold text-gray-400">
+                          Hidden
+                        </span>
                       </>
                     )}
                   </button>
@@ -176,9 +200,9 @@ export default function BannersPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => handleDelete(banner._id)}
-                  className="p-3 hover:bg-red-50 text-red-400 rounded-2xl transition-all"
+                  className="p-2.5 lg:p-3 hover:bg-red-50 text-red-400 rounded-2xl transition-all"
                 >
-                  <Trash2 size={18} />
+                  <Trash2 size={17} />
                 </button>
               </div>
             </div>
@@ -188,12 +212,14 @@ export default function BannersPage() {
         {/* Placeholder for New Banner */}
         <button
           onClick={() => setShowAddModal(true)}
-          className="border-2 border-dashed border-gray-200 rounded-3xl h-64 flex flex-col items-center justify-center gap-4 text-gray-400 hover:border-primary/50 hover:text-primary transition-all group"
+          className="border-2 border-dashed border-gray-200 rounded-3xl h-56 lg:h-64 flex flex-col items-center justify-center gap-4 text-gray-400 hover:border-primary/50 hover:text-primary transition-all group"
         >
-          <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-primary/10 transition-all">
-            <ImageIcon size={32} />
+          <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-primary/10 transition-all">
+            <ImageIcon size={28} />
           </div>
-          <span className="font-bold">Add Marketing Banner</span>
+          <span className="font-bold text-sm lg:text-base">
+            Add Marketing Banner
+          </span>
         </button>
       </div>
 
@@ -203,69 +229,94 @@ export default function BannersPage() {
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl"
+            className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
           >
-            <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="text-2xl font-black">Create Banner</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-gray-400 hover:text-dark transition-all">
-                <Trash2 size={24} />
+            <div className="p-6 lg:p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
+              <h3 className="text-xl lg:text-2xl font-black">Create Banner</h3>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="text-gray-400 hover:text-dark transition-all"
+              >
+                <Trash2 size={22} />
               </button>
             </div>
 
-            <div className="p-8 space-y-6">
+            <div className="p-6 lg:p-8 space-y-5 overflow-y-auto">
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-400 uppercase">Banner Image</label>
-                <div className="flex items-center gap-4">
+                <label className="text-xs font-bold text-gray-400 uppercase">
+                  Banner Image
+                </label>
+                <div className="flex items-center gap-4 flex-wrap">
                   {newBanner.image ? (
-                    <img src={newBanner.image} alt="Preview" className="w-20 h-20 rounded-xl object-cover border border-gray-200" />
+                    <img
+                      src={newBanner.image}
+                      alt="Preview"
+                      className="w-16 h-16 rounded-xl object-cover border border-gray-200"
+                    />
                   ) : (
-                    <div className="w-20 h-20 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-200 text-gray-400">
-                      <ImageIcon size={24} />
+                    <div className="w-16 h-16 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-200 text-gray-400">
+                      <ImageIcon size={22} />
                     </div>
                   )}
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
-                    className="flex-1 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                    className="flex-1 text-sm file:mr-3 file:py-2 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-400 uppercase">Banner Title</label>
+                <label className="text-xs font-bold text-gray-400 uppercase">
+                  Banner Title
+                </label>
                 <input
                   type="text"
                   value={newBanner.title}
-                  onChange={(e) => setNewBanner({ ...newBanner, title: e.target.value })}
+                  onChange={(e) =>
+                    setNewBanner({ ...newBanner, title: e.target.value })
+                  }
                   placeholder="e.g. Mega Holiday Sale"
                   className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-400 uppercase">Subtitle</label>
+                <label className="text-xs font-bold text-gray-400 uppercase">
+                  Subtitle
+                </label>
                 <input
                   type="text"
                   value={newBanner.subtitle}
-                  onChange={(e) => setNewBanner({ ...newBanner, subtitle: e.target.value })}
+                  onChange={(e) =>
+                    setNewBanner({ ...newBanner, subtitle: e.target.value })
+                  }
                   placeholder="e.g. Get 20% cashback on all orders"
                   className="w-full p-4 bg-gray-50 rounded-2xl outline-none"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-400 uppercase">Accent Color</label>
+                  <label className="text-xs font-bold text-gray-400 uppercase">
+                    Accent Color
+                  </label>
                   <input
                     type="color"
                     value={newBanner.color}
-                    onChange={(e) => setNewBanner({ ...newBanner, color: e.target.value })}
-                    className="w-full h-14 bg-gray-50 rounded-2xl p-1 cursor-pointer"
+                    onChange={(e) =>
+                      setNewBanner({ ...newBanner, color: e.target.value })
+                    }
+                    className="w-full h-12 lg:h-14 bg-gray-50 rounded-2xl p-1 cursor-pointer"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-400 uppercase">Icon</label>
+                  <label className="text-xs font-bold text-gray-400 uppercase">
+                    Icon
+                  </label>
                   <select
                     value={newBanner.icon}
-                    onChange={(e) => setNewBanner({ ...newBanner, icon: e.target.value })}
+                    onChange={(e) =>
+                      setNewBanner({ ...newBanner, icon: e.target.value })
+                    }
                     className="w-full p-4 bg-gray-50 rounded-2xl outline-none appearance-none"
                   >
                     <option>gift</option>
@@ -277,14 +328,17 @@ export default function BannersPage() {
               </div>
             </div>
 
-            <div className="p-8 bg-gray-50 border-t border-gray-100 flex gap-4">
-              <button onClick={() => setShowAddModal(false)} className="flex-1 py-4 font-bold text-gray-500 hover:bg-gray-100 rounded-2xl transition-all">
+            <div className="p-6 lg:p-8 bg-gray-50 border-t border-gray-100 flex gap-4 shrink-0">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="flex-1 py-3 lg:py-4 font-bold text-gray-500 hover:bg-gray-100 rounded-2xl transition-all"
+              >
                 Cancel
               </button>
               <button
                 disabled={isSubmitting}
                 onClick={handleCreateBanner}
-                className="flex-[2] bg-primary text-white py-4 rounded-2xl font-black tracking-wide shadow-lg shadow-primary/30 hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-50"
+                className="flex-[2] bg-primary text-white py-3 lg:py-4 rounded-2xl font-black tracking-wide shadow-lg shadow-primary/30 hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-50"
               >
                 {isSubmitting ? "CREATING..." : "CREATE BANNER"}
               </button>

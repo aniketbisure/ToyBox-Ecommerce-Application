@@ -13,7 +13,9 @@ import {
   Settings,
   LogOut,
   ShieldCheck,
-  Loader2
+  Loader2,
+  Menu,
+  X,
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -24,6 +26,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [isVerified, setIsVerified] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const userInfoRaw = localStorage.getItem("userInfo");
@@ -35,14 +38,12 @@ export default function DashboardLayout({
 
     try {
       const userInfo = JSON.parse(userInfoRaw);
-      // Verify token exists and user is actually an admin
       if (!userInfo?.token || userInfo?.user?.role !== "admin") {
         localStorage.removeItem("userInfo");
         router.replace("/login");
         return;
       }
 
-      // Verify token is not expired (decode JWT payload without library)
       const [, payload] = userInfo.token.split(".");
       const decoded = JSON.parse(atob(payload));
       if (decoded.exp && decoded.exp * 1000 < Date.now()) {
@@ -58,6 +59,11 @@ export default function DashboardLayout({
     }
   }, [router]);
 
+  // Close sidebar on route change (mobile nav)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
   const navItems = [
     { name: "Overview", icon: LayoutDashboard, href: "/" },
     { name: "Products", icon: Package, href: "/products" },
@@ -68,7 +74,6 @@ export default function DashboardLayout({
     { name: "Settings", icon: Settings, href: "/settings" },
   ];
 
-  // Block render until auth verified — prevents flash of dashboard content
   if (!isVerified) {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-50">
@@ -77,51 +82,110 @@ export default function DashboardLayout({
     );
   }
 
+  const SidebarContent = () => (
+    <>
+      <div className="flex items-center gap-3 mb-10 px-2">
+        <div className="bg-primary p-2 rounded-xl">
+          <ShieldCheck className="text-white" size={24} />
+        </div>
+        <h1 className="font-black text-xl tracking-tight">
+          ToyBox <span className="text-primary">Admin</span>
+        </h1>
+      </div>
+
+      <nav className="flex-1 space-y-2">
+        {navItems.map((item) => {
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`sidebar-link ${
+                isActive
+                  ? "sidebar-link-active"
+                  : "text-gray-500 hover:text-dark hover:bg-gray-50"
+              }`}
+            >
+              <item.icon size={20} />
+              <span className="font-semibold">{item.name}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="pt-6 border-t border-gray-100">
+        <button
+          onClick={() => {
+            localStorage.removeItem("userInfo");
+            window.location.href = "/login";
+          }}
+          className="sidebar-link text-red-500 w-full hover:bg-red-50"
+        >
+          <LogOut size={20} />
+          <span className="font-semibold">Logout</span>
+        </button>
+      </div>
+    </>
+  );
+
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col p-6">
-        <div className="flex items-center gap-3 mb-10 px-2">
-          <div className="bg-primary p-2 rounded-xl">
-            <ShieldCheck className="text-white" size={24} />
-          </div>
-          <h1 className="font-black text-xl tracking-tight">ToyBox <span className="text-primary">Admin</span></h1>
-        </div>
-
-        <nav className="flex-1 space-y-2">
-          {navItems.map((item) => {
-            const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`sidebar-link ${isActive ? "sidebar-link-active" : "text-gray-500 hover:text-dark hover:bg-gray-50"}`}
-              >
-                <item.icon size={20} />
-                <span className="font-semibold">{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="pt-6 border-t border-gray-100">
-          <button
-            onClick={() => {
-              localStorage.removeItem("userInfo");
-              window.location.href = "/login";
-            }}
-            className="sidebar-link text-red-500 w-full hover:bg-red-50"
-          >
-            <LogOut size={20} />
-            <span className="font-semibold">Logout</span>
-          </button>
-        </div>
+      {/* ── Desktop Sidebar (lg+) ── */}
+      <aside className="hidden lg:flex w-64 bg-white border-r border-gray-200 flex-col p-6 shrink-0">
+        <SidebarContent />
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-gray-50 p-10">
-        {children}
-      </main>
+      {/* ── Mobile Drawer Overlay ── */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* ── Mobile Drawer ── */}
+      <aside
+        className={`fixed top-0 left-0 z-50 h-full w-72 bg-white flex flex-col p-6 shadow-2xl transform transition-transform duration-300 ease-in-out lg:hidden ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <button
+          onClick={() => setSidebarOpen(false)}
+          className="absolute top-4 right-4 p-2 rounded-xl hover:bg-gray-100 text-gray-500"
+        >
+          <X size={20} />
+        </button>
+        <SidebarContent />
+      </aside>
+
+      {/* ── Main Content Area ── */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Mobile Top Navbar */}
+        <header className="lg:hidden flex items-center gap-4 bg-white border-b border-gray-200 px-4 py-3 shrink-0">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 rounded-xl hover:bg-gray-100 text-gray-600"
+          >
+            <Menu size={22} />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="bg-primary p-1.5 rounded-lg">
+              <ShieldCheck className="text-white" size={18} />
+            </div>
+            <span className="font-black text-base tracking-tight">
+              ToyBox <span className="text-primary">Admin</span>
+            </span>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto bg-gray-50 p-4 sm:p-6 lg:p-10">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
