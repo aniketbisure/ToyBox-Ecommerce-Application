@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Search, Filter, Eye, ShoppingCart, User, Calendar, CreditCard, Loader2 } from "lucide-react";
+import { Search, Filter, User, Calendar, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "../../../services/apiService";
 
@@ -17,7 +17,7 @@ export default function OrdersPage() {
     try {
       const { data } = await api.get("/orders");
       setOrders(data);
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to fetch orders");
     } finally {
       setLoading(false);
@@ -32,8 +32,8 @@ export default function OrdersPage() {
     try {
       await api.put(`/orders/${id}/deliver`);
       fetchOrders();
-    } catch (error) {
-      alert("Failed to update status");
+    } catch (_error) {
+      window.alert("Failed to update status");
     }
   };
 

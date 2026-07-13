@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Search, UserCheck, UserMinus, Mail, Phone, MapPin, MoreHorizontal, Loader2 } from "lucide-react";
+import { Search, Mail, Phone, MoreHorizontal, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "../../../services/apiService";
 
@@ -14,7 +14,7 @@ export default function UsersPage() {
       try {
         const { data } = await api.get("/users/admin/all");
         setUsers(data);
-      } catch (error) {
+      } catch (_error) {
         console.error("Failed to fetch users");
       } finally {
         setLoading(false);

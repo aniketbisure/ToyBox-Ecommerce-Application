@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Save, Bell, Shield, Globe, CreditCard, Truck, Smartphone, Loader2 } from "lucide-react";
+import { Save, Globe, Truck, Smartphone, Loader2 } from "lucide-react";
 import api from "../../../services/apiService";
 
 export default function SettingsPage() {
@@ -30,7 +30,7 @@ export default function SettingsPage() {
           taxRate: data.taxRate,
           maintenanceMode: data.maintenanceMode
         });
-      } catch (error) {
+      } catch (_error) {
         console.error("Failed to fetch settings");
       } finally {
         setLoading(false);
@@ -43,9 +43,9 @@ export default function SettingsPage() {
     setSaving(true);
     try {
       await api.put("/config", config);
-      alert("Settings saved successfully");
-    } catch (error) {
-      alert("Failed to save settings");
+      window.alert("Settings saved successfully");
+    } catch (_error) {
+      window.alert("Failed to save settings");
     } finally {
       setSaving(false);
     }

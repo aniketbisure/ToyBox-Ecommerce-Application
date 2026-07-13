@@ -59,7 +59,7 @@ export default function AddProductPage() {
 
   const handlePublish = async () => {
     if (!formData.name || !formData.sku || !formData.price || !formData.image) {
-      alert("Please fill in at minimum: Product Title, SKU, Price, and Image URL.");
+      window.alert("Please fill in at minimum: Product Title, SKU, Price, and Image URL.");
       return;
     }
     setLoading(true);
@@ -70,7 +70,7 @@ export default function AddProductPage() {
       });
       router.push("/products");
     } catch (error: any) {
-      alert(error?.response?.data?.message || "Failed to publish product");
+      window.alert(error?.response?.data?.message || "Failed to publish product");
     } finally {
       setLoading(false);
     }

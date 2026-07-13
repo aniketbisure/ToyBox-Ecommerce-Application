@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Search, Filter, MoreVertical, Edit, Trash2, Package, Loader2 } from "lucide-react";
+import { Plus, Search, Filter, Edit, Trash2, Package } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -10,9 +10,9 @@ import api from "../../../services/apiService";
 export default function ProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
+  const [_pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
 
   useEffect(() => {
     fetchProducts();
@@ -29,7 +29,7 @@ export default function ProductsPage() {
         pages: data.pages,
         total: data.total
       });
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to fetch products");
     } finally {
       setLoading(false);
@@ -37,12 +37,12 @@ export default function ProductsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this product?")) {
+    if (window.confirm("Are you sure you want to delete this product?")) {
       try {
         await api.delete(`/products/${id}`);
         setProducts(products.filter(p => p._id !== id));
-      } catch (error) {
-        alert("Failed to delete product");
+      } catch (_error) {
+        window.alert("Failed to delete product");
       }
     }
   };

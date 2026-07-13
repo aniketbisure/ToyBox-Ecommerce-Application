@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, Search, Trash2, Tags, Tag, Loader2 } from "lucide-react";
+import { Plus, Search, Trash2, Tag, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "../../../services/apiService";
 
@@ -19,7 +19,7 @@ export default function CategoriesPage() {
     try {
       const { data } = await api.get("/config");
       setCategories(data.categories);
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to fetch categories");
     } finally {
       setLoading(false);
@@ -33,18 +33,18 @@ export default function CategoriesPage() {
       setCategories([...categories, newCategory]);
       setNewCategory("");
       setShowAddModal(false);
-    } catch (error) {
-      alert("Failed to add category");
+    } catch (_error) {
+      window.alert("Failed to add category");
     }
   };
 
   const handleDelete = async (name: string) => {
-    if (confirm(`Delete category "${name}"?`)) {
+    if (window.confirm(`Delete category "${name}"?`)) {
       try {
         await api.delete(`/config/categories/${name}`);
         setCategories(categories.filter(c => c !== name));
-      } catch (error) {
-        alert("Failed to delete category");
+      } catch (_error) {
+        window.alert("Failed to delete category");
       }
     }
   };

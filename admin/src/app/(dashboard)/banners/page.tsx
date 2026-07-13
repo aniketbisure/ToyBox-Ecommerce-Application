@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Plus, Trash2, Edit2, ImageIcon, Layout, ToggleLeft, ToggleRight, Loader2 } from "lucide-react";
+import { Plus, Trash2, ImageIcon, Layout, ToggleLeft, ToggleRight, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import api from "../../../services/apiService";
@@ -40,7 +40,7 @@ export default function BannersPage() {
     try {
       const { data } = await api.get("/config");
       setBanners(data.banners);
-    } catch (error) {
+    } catch (_error) {
       console.error("Failed to fetch banners");
     } finally {
       setLoading(false);
@@ -49,24 +49,17 @@ export default function BannersPage() {
 
   const handleCreateBanner = async () => {
     if (!newBanner.title || !newBanner.subtitle || !newBanner.image) {
-      alert("Please fill all fields including the image");
+      window.alert("Please fill all fields including the image");
       return;
     }
     setIsSubmitting(true);
     try {
       await api.post("/config/banners", newBanner);
       setShowAddModal(false);
-      setNewBanner({
-        title: "",
-        subtitle: "",
-        image: "",
-        color: "#FF6B6B",
-        icon: "gift",
-        isActive: true
-      });
+      setNewBanner({ title: "", subtitle: "", image: "", color: "#FF6B6B", icon: "gift", isActive: true });
       fetchBanners();
-    } catch (error) {
-      alert("Failed to create banner");
+    } catch (_error) {
+      window.alert("Failed to create banner");
     } finally {
       setIsSubmitting(false);
     }
@@ -86,18 +79,18 @@ export default function BannersPage() {
       // POST to a bulk-update endpoint that only touches banners
       await api.put("/config/banners/bulk", { banners: updatedBanners });
       setBanners(updatedBanners);
-    } catch (error) {
-      alert("Failed to toggle banner status");
+    } catch (_error) {
+      window.alert("Failed to toggle banner status");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Delete this banner?")) {
+    if (window.confirm("Delete this banner?")) {
       try {
         await api.delete(`/config/banners/${id}`);
         setBanners(banners.filter(b => b._id !== id));
-      } catch (error) {
-        alert("Failed to delete banner");
+      } catch (_error) {
+        window.alert("Failed to delete banner");
       }
     }
   };
