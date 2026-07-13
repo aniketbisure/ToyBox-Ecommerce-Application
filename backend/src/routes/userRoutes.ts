@@ -1,3 +1,4 @@
+import express from 'express';
 import { getProfile, updateProfile, getUsers, deleteProfile, updateWishlist, updateCart } from '../controllers/userController';
 import { protect, admin } from '../middleware/authMiddleware';
 

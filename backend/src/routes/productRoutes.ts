@@ -1,3 +1,4 @@
+import express from 'express';
 import { getProducts, getProductById, createProduct, updateProduct, deleteProduct, createProductReview, getMyReviews } from '../controllers/productController';
 import { protect, admin } from '../middleware/authMiddleware';
 import { cache } from '../middleware/cacheMiddleware';

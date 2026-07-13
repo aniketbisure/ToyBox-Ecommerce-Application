@@ -69,6 +69,7 @@ export interface IProduct extends Document {
 }
 
 export interface IReview {
+  _id?: any;
   name: string;
   rating: number;
   comment: string;
