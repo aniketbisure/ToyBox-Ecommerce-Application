@@ -97,6 +97,8 @@ const CategoriesScreen = ({ navigation }: any) => {
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={true}
             persistentScrollbar={true}
+            indicatorStyle="black"
+            contentContainerStyle={{ paddingBottom: 20 }}
           />
         </View>
 
@@ -105,6 +107,8 @@ const CategoriesScreen = ({ navigation }: any) => {
           style={styles.contentArea}
           showsVerticalScrollIndicator={true}
           persistentScrollbar={true}
+          indicatorStyle="black"
+          contentContainerStyle={{ paddingBottom: 100 }}
         >
           <Text style={styles.sectionTitle}>{selectedCategory} Collection</Text>
           <View style={styles.grid}>

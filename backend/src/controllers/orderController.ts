@@ -260,11 +260,9 @@ export const getOrderById = async (req: AuthRequest, res: Response) => {
     }
 
     // Only allow the order owner or an admin to view it
-    const isOwner = order.user && (
-      typeof order.user === 'object'
-        ? (order.user as any)._id?.toString() === req.user?.id
-        : (order.user as any).toString() === req.user?.id
-    );
+    const userId = req.user?.id;
+    const orderUser = order.user as any;
+    const isOwner = orderUser && (orderUser._id ? orderUser._id.toString() : orderUser.toString()) === userId;
     const isAdmin = req.user?.role === 'admin';
 
     if (!isOwner && !isAdmin) {

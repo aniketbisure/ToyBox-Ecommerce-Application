@@ -97,7 +97,7 @@ const HomeScreen = ({ navigation }: any) => {
         >
           <View style={[
             styles.topMenuIconBg,
-            { backgroundColor: item.color + '15' },
+            { backgroundColor: item.color + '25' }, // Slightly more opaque
             activeTopFilter === item.name && { borderWidth: 2, borderColor: item.color }
           ]}>
             <Icon name={item.icon} size={32} color={item.color} />
@@ -283,10 +283,10 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
   },
   topMenuContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 10,
-    marginTop: 15,
-    marginBottom: 5,
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    marginTop: 20,
+    marginBottom: 10,
     width: '100%',
   },
   topMenuItem: {

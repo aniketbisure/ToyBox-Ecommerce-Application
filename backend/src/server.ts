@@ -3,11 +3,14 @@ import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import fs from 'fs';
 import authRoutes from './routes/authRoutes';
 import productRoutes from './routes/productRoutes';
 import userRoutes from './routes/userRoutes';
 import configRoutes from './routes/configRoutes';
 import orderRoutes from './routes/orderRoutes';
+import uploadRoutes from './routes/uploadRoutes';
 import { notFound, errorHandler } from './middleware/errorMiddleware';
 import logger from './utils/logger';
 import { initOrderReconciliationJob } from './jobs/reconcileJob';
@@ -81,6 +84,14 @@ app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/upload', uploadRoutes);
+
+// Static folders
+const uploadsDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+app.use('/uploads', express.static(uploadsDir));
 
 // Error Handling
 app.use(notFound);
