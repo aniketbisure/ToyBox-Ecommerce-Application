@@ -18,7 +18,7 @@ import { RootState } from '../redux/store';
 
 const CategoriesScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
-  const { categories } = useSelector((state: RootState) => state.config);
+  const { categories, ageRanges } = useSelector((state: RootState) => state.config);
   const { products } = useSelector((state: RootState) => state.products);
   const [selectedCategory, setSelectedCategory] = useState('All Toys');
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,6 +33,13 @@ const CategoriesScreen = ({ navigation }: any) => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const handleAgeRangePress = (ageRange: any) => {
+    navigation.navigate('HomeTab', {
+      screen: 'Home',
+      params: { minAge: ageRange.minAge, maxAge: ageRange.maxAge, title: ageRange.name }
+    });
+  };
 
   const renderSidebarItem = ({ item }: any) => {
     const isActive = selectedCategory === item.name;
@@ -133,16 +140,20 @@ const CategoriesScreen = ({ navigation }: any) => {
             )}
           </View>
 
-          {selectedCategory === 'All Toys' && (
+          {selectedCategory === 'All Toys' && ageRanges && ageRanges.length > 0 && (
             <>
               <Text style={styles.sectionTitle}>Shop by Age</Text>
               <View style={styles.grid}>
-                {['0-2 Years', '3-5 Years', '6-8 Years', '9-12 Years', '12+ Years', 'Collectors'].map((age, i) => (
-                  <TouchableOpacity key={i} style={styles.gridItemLarge}>
+                {ageRanges.map((age: any, i: number) => (
+                  <TouchableOpacity
+                    key={age._id || i}
+                    style={styles.gridItemLarge}
+                    onPress={() => handleAgeRangePress(age)}
+                  >
                     <View style={styles.largeItemImage}>
-                      <Icon name="baby-face-outline" size={40} color={COLORS.secondary} />
+                      <Icon name={age.icon || "baby-face-outline"} size={40} color={COLORS.secondary} />
                     </View>
-                    <Text style={styles.itemLabel}>{age}</Text>
+                    <Text style={styles.itemLabel}>{age.name}</Text>
                   </TouchableOpacity>
                 ))}
               </View>

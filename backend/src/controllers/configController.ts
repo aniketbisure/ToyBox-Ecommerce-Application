@@ -16,6 +16,13 @@ export const getConfig = async (req: Request, res: Response) => {
           }
         ],
         categories: ['All', 'Plush', 'Building', 'Electronics', 'Wooden', 'Action Figures'],
+        ageRanges: [
+          { name: '0-2 Years', minAge: 0, maxAge: 2, icon: 'baby-face-outline' },
+          { name: '3-5 Years', minAge: 3, maxAge: 5, icon: 'baby-face-outline' },
+          { name: '6-8 Years', minAge: 6, maxAge: 8, icon: 'baby-face-outline' },
+          { name: '9-12 Years', minAge: 9, maxAge: 12, icon: 'baby-face-outline' },
+          { name: '12+ Years', minAge: 12, maxAge: 99, icon: 'baby-face-outline' }
+        ],
         storeName: 'ToyBox Marketplace',
         supportEmail: 'support@toybox.com',
         currency: 'INR',
@@ -33,8 +40,6 @@ export const getConfig = async (req: Request, res: Response) => {
 
 export const updateConfig = async (req: Request, res: Response) => {
   try {
-    // Whitelist only safe, top-level config fields — never accept banners or categories
-    // via this generic endpoint to avoid accidental overwrites
     const {
       storeName,
       supportEmail,
@@ -43,6 +48,7 @@ export const updateConfig = async (req: Request, res: Response) => {
       freeShippingThreshold,
       taxRate,
       maintenanceMode,
+      ageRanges
     } = req.body;
 
     const update: Record<string, any> = {};
@@ -53,6 +59,7 @@ export const updateConfig = async (req: Request, res: Response) => {
     if (freeShippingThreshold !== undefined) update.freeShippingThreshold = Number(freeShippingThreshold);
     if (taxRate !== undefined) update.taxRate = Number(taxRate);
     if (maintenanceMode !== undefined) update.maintenanceMode = Boolean(maintenanceMode);
+    if (ageRanges !== undefined) update.ageRanges = ageRanges;
 
     const config = await AppConfig.findOneAndUpdate(
       {},

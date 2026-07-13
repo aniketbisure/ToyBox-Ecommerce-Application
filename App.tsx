@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
 import { Provider, useSelector } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
@@ -8,9 +8,15 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { COLORS } from './src/constants/theme';
 import Toast from './src/components/Toast';
 import { toastRef } from './src/utils/toastService';
+import { requestUserPermission, notificationListener } from './src/utils/notificationService';
 
 const MainApp = () => {
   const darkMode = useSelector((state: RootState) => state.config.settings.darkMode);
+
+  useEffect(() => {
+    requestUserPermission();
+    notificationListener();
+  }, []);
 
   return (
     <SafeAreaProvider>

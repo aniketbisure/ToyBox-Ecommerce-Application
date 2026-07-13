@@ -6,16 +6,26 @@ export const getProducts = async (req: Request, res: Response) => {
   try {
     const pageSize = Number(req.query.pageSize) || 12;
     const page = Number(req.query.pageNumber) || 1;
+    const category = req.query.category;
+    const minAge = Number(req.query.minAge);
+    const maxAge = Number(req.query.maxAge);
 
-    const keyword = req.query.keyword
-      ? {
-          $text: { $search: req.query.keyword.toString() },
-          isDeleted: false,
-        }
-      : { isDeleted: false };
+    const query: any = { isDeleted: false };
 
-    const count = await Product.countDocuments(keyword);
-    const products = await Product.find(keyword)
+    if (req.query.keyword) {
+      query.$text = { $search: req.query.keyword.toString() };
+    }
+
+    if (category && category !== 'All' && category !== 'All Toys') {
+      query.category = category;
+    }
+
+    if (!isNaN(minAge) && !isNaN(maxAge)) {
+      query.minimumAge = { $gte: minAge, $lte: maxAge };
+    }
+
+    const count = await Product.countDocuments(query);
+    const products = await Product.find(query)
       .limit(pageSize)
       .skip(pageSize * (page - 1))
       .sort({ createdAt: -1 });
@@ -153,5 +163,25 @@ export const createProductReview = async (req: AuthRequest, res: Response) => {
     res.status(201).json({ message: 'Review added' });
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Error adding review' });
+  }
+};
+
+export const getMyReviews = async (req: AuthRequest, res: Response) => {
+  try {
+    const products = await Product.find({ 'reviews.user': req.user!.id });
+    const userReviews = products.map(p => {
+      const review = p.reviews.find(r => r.user.toString() === req.user!.id.toString());
+      return {
+        id: review?._id,
+        productId: p._id,
+        product: p.name,
+        rating: review?.rating,
+        comment: review?.comment,
+        date: (review as any).createdAt || (p as any).updatedAt
+      };
+    });
+    res.json(userReviews);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching reviews', error });
   }
 };

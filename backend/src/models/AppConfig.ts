@@ -9,9 +9,18 @@ export interface IBanner {
   isActive: boolean;
 }
 
+export interface IAgeRange {
+  id: string;
+  name: string;
+  minAge: number;
+  maxAge: number;
+  icon?: string;
+}
+
 export interface IAppConfig extends Document {
   banners: IBanner[];
   categories: string[];
+  ageRanges: IAgeRange[];
   maintenanceMode: boolean;
   storeName: string;
   supportEmail: string;
@@ -20,6 +29,13 @@ export interface IAppConfig extends Document {
   freeShippingThreshold: number;
   taxRate: number;
 }
+
+const AgeRangeSchema = new Schema({
+  name: { type: String, required: true },
+  minAge: { type: Number, required: true },
+  maxAge: { type: Number, required: true },
+  icon: { type: String, default: 'baby-face-outline' }
+});
 
 const BannerSchema = new Schema({
   image: { type: String, required: true },
@@ -32,6 +48,7 @@ const BannerSchema = new Schema({
 const AppConfigSchema: Schema = new Schema({
   banners: [BannerSchema],
   categories: [{ type: String }],
+  ageRanges: [AgeRangeSchema],
   maintenanceMode: { type: Boolean, default: false },
   storeName: { type: String, default: 'ToyBox Marketplace' },
   supportEmail: { type: String, default: 'support@toybox.com' },

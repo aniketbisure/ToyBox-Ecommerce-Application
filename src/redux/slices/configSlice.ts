@@ -16,6 +16,7 @@ interface Banner {
 interface ConfigState {
   banners: Banner[];
   categories: string[];
+  ageRanges: any[];
   settings: {
     notificationsEnabled: boolean;
     darkMode: boolean;
@@ -26,6 +27,7 @@ interface ConfigState {
 const initialState: ConfigState = {
   banners: [],
   categories: [],
+  ageRanges: [],
   settings: {
     notificationsEnabled: true,
     darkMode: false,
@@ -72,6 +74,7 @@ const configSlice = createSlice({
 
         state.banners = mappedBanners.filter((b: any) => b.isActive);
         state.categories = action.payload.categories || [];
+        state.ageRanges = action.payload.ageRanges || [];
       })
       .addCase(fetchAppConfig.rejected, (state) => {
         state.loading = false;

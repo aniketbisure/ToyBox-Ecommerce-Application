@@ -33,8 +33,12 @@ const ProfileScreen = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const { data } = await api.get('/orders/myorders');
-        setOrderCount(data.length);
+        const [ordersRes, reviewsRes] = await Promise.all([
+          api.get('/orders/myorders'),
+          api.get('/products/myreviews')
+        ]);
+        setOrderCount(ordersRes.data.length);
+        setReviewCount(reviewsRes.data.length);
       } catch (e) {
         console.log('Error fetching profile stats');
       }

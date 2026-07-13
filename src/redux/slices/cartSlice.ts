@@ -1,4 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import apiClient from '../../api/apiClient';
+import { getProfile } from './authSlice';
 
 interface CartItem {
   id: string;
@@ -11,12 +13,28 @@ interface CartItem {
 interface CartState {
   items: CartItem[];
   totalAmount: number;
+  loading: boolean;
 }
 
 const initialState: CartState = {
   items: [],
   totalAmount: 0,
+  loading: false,
 };
+
+export const syncCart = createAsyncThunk(
+  'cart/sync',
+  async (cartItems: CartItem[], { rejectWithValue }) => {
+    try {
+      const response = await apiClient.put('/users/cart', {
+        cart: cartItems.map(item => ({ product: item.id, quantity: item.quantity }))
+      });
+      return response.data; // This will be the populated cart items
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to sync cart');
+    }
+  }
+);
 
 const cartSlice = createSlice({
   name: 'cart',
@@ -49,6 +67,27 @@ const cartSlice = createSlice({
       state.totalAmount = 0;
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(syncCart.fulfilled, (state, action) => {
+        state.items = action.payload.map((item: any) => ({
+          ...item.product,
+          id: item.product._id || item.product.id,
+          quantity: item.quantity
+        }));
+        state.totalAmount = state.items.reduce((total, item) => total + item.price * item.quantity, 0);
+      })
+      .addCase(getProfile.fulfilled, (state, action) => {
+        if (action.payload.cart) {
+          state.items = action.payload.cart.map((item: any) => ({
+            ...item.product,
+            id: item.product._id || item.product.id,
+            quantity: item.quantity
+          }));
+          state.totalAmount = state.items.reduce((total, item) => total + item.price * item.quantity, 0);
+        }
+      });
+  }
 });
 
 export const { addToCart, removeFromCart, updateQuantity, clearCart } = cartSlice.actions;

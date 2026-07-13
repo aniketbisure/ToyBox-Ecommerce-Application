@@ -2,8 +2,8 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../redux/store';
-import { toggleWishlist } from '../redux/slices/wishlistSlice';
-import { addToCart } from '../redux/slices/cartSlice';
+import { toggleWishlist, syncWishlist } from '../redux/slices/wishlistSlice';
+import { addToCart, syncCart } from '../redux/slices/cartSlice';
 import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
 import { showToast } from '../utils/toastService';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -16,9 +16,11 @@ const WishlistScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { items } = useSelector((state: RootState) => state.wishlist);
-  const loading = false; // Add a placeholder loading state or use one from Redux if available
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const loading = false;
 
   const renderSkeleton = () => (
     <View style={{ paddingHorizontal: 25 }}>
@@ -52,6 +54,13 @@ const WishlistScreen = ({ navigation }: any) => {
             style={styles.addCartBtn}
             onPress={() => {
               dispatch(addToCart({...item, quantity: 1}));
+              if (isAuthenticated) {
+                const existingItem = cartItems.find(i => i.id === item.id);
+                const nextCart = existingItem
+                  ? cartItems.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i)
+                  : [...cartItems, { ...item, quantity: 1 }];
+                dispatch(syncCart(nextCart));
+              }
               showToast('Added to cart', 'success');
             }}
           >
@@ -61,7 +70,13 @@ const WishlistScreen = ({ navigation }: any) => {
       </View>
       <TouchableOpacity
         style={styles.removeBtn}
-        onPress={() => dispatch(toggleWishlist(item))}
+        onPress={() => {
+          dispatch(toggleWishlist(item));
+          if (isAuthenticated) {
+            const nextWishlist = items.filter(i => i.id !== item.id);
+            dispatch(syncWishlist(nextWishlist));
+          }
+        }}
       >
         <Icon name="heart" size={24} color={colors.primary} />
       </TouchableOpacity>

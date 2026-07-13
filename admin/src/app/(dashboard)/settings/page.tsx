@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Save, Globe, Truck, Smartphone, Loader2 } from "lucide-react";
+import { Save, Globe, Truck, Smartphone, Loader2, Baby, Trash2, Plus } from "lucide-react";
 import api from "../../../services/apiService";
 
 export default function SettingsPage() {
@@ -15,6 +15,7 @@ export default function SettingsPage() {
     freeShippingThreshold: 0,
     taxRate: 0,
     maintenanceMode: false,
+    ageRanges: [] as any[],
   });
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export default function SettingsPage() {
           freeShippingThreshold: data.freeShippingThreshold,
           taxRate: data.taxRate,
           maintenanceMode: data.maintenanceMode,
+          ageRanges: data.ageRanges || [],
         });
       } catch (_error) {
         console.error("Failed to fetch settings");
@@ -185,37 +187,78 @@ export default function SettingsPage() {
         <section className="bg-white rounded-3xl p-5 lg:p-8 shadow-sm border border-gray-100">
           <div className="flex items-center gap-3 mb-5 lg:mb-6">
             <div className="p-2 bg-gray-100 rounded-lg shrink-0">
-              <Smartphone size={18} className="text-gray-500" />
+              <Baby size={18} className="text-gray-500" />
             </div>
-            <h3 className="text-lg lg:text-xl font-bold">Mobile App Config</h3>
+            <h3 className="text-lg lg:text-xl font-bold">Age Range Management</h3>
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl gap-4">
-            <div className="min-w-0">
-              <p className="font-bold text-sm lg:text-base">Maintenance Mode</p>
-              <p className="text-xs lg:text-sm text-gray-400">
-                Disable the mobile app for users during updates
-              </p>
-            </div>
+          <div className="space-y-4">
+            {config.ageRanges.map((range, index) => (
+              <div key={index} className="flex gap-4 items-end bg-gray-50 p-4 rounded-2xl">
+                <div className="flex-1 space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Label</label>
+                  <input
+                    type="text"
+                    value={range.name}
+                    onChange={(e) => {
+                      const newRanges = [...config.ageRanges];
+                      newRanges[index].name = e.target.value;
+                      setConfig({ ...config, ageRanges: newRanges });
+                    }}
+                    className="w-full bg-white p-2 rounded-lg text-sm border-none outline-none"
+                  />
+                </div>
+                <div className="w-20 space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Min</label>
+                  <input
+                    type="number"
+                    value={range.minAge}
+                    onChange={(e) => {
+                      const newRanges = [...config.ageRanges];
+                      newRanges[index].minAge = Number(e.target.value);
+                      setConfig({ ...config, ageRanges: newRanges });
+                    }}
+                    className="w-full bg-white p-2 rounded-lg text-sm border-none outline-none"
+                  />
+                </div>
+                <div className="w-20 space-y-1">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase">Max</label>
+                  <input
+                    type="number"
+                    value={range.maxAge}
+                    onChange={(e) => {
+                      const newRanges = [...config.ageRanges];
+                      newRanges[index].maxAge = Number(e.target.value);
+                      setConfig({ ...config, ageRanges: newRanges });
+                    }}
+                    className="w-full bg-white p-2 rounded-lg text-sm border-none outline-none"
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    const newRanges = config.ageRanges.filter((_, i) => i !== index);
+                    setConfig({ ...config, ageRanges: newRanges });
+                  }}
+                  className="p-2 text-red-400 hover:bg-red-50 rounded-lg"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            ))}
             <button
-              onClick={() =>
-                setConfig({
-                  ...config,
-                  maintenanceMode: !config.maintenanceMode,
-                })
-              }
-              className={`w-12 h-6 shrink-0 ${
-                config.maintenanceMode ? "bg-red-500" : "bg-gray-200"
-              } rounded-full relative transition-all`}
+              onClick={() => setConfig({
+                ...config,
+                ageRanges: [...config.ageRanges, { name: "New Age", minAge: 0, maxAge: 10 }]
+              })}
+              className="w-full py-3 border-2 border-dashed border-gray-200 rounded-2xl flex items-center justify-center gap-2 text-gray-400 hover:text-primary hover:border-primary/50 transition-all font-bold text-sm"
             >
-              <div
-                className={`absolute ${
-                  config.maintenanceMode ? "right-1" : "left-1"
-                } top-1 w-4 h-4 bg-white rounded-full transition-all`}
-              />
+              <Plus size={16} /> Add Age Range
             </button>
           </div>
         </section>
+
+        {/* Mobile App Config */}
+        <section className="bg-white rounded-3xl p-5 lg:p-8 shadow-sm border border-gray-100">
 
         <div className="flex justify-end gap-4 pt-2">
           <button

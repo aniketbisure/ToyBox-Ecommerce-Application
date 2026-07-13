@@ -1,8 +1,8 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Platform, Alert, FlatList, Modal, Share, TextInput, StatusBar } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { addToCart } from '../redux/slices/cartSlice';
-import { toggleWishlist } from '../redux/slices/wishlistSlice';
+import { addToCart, syncCart } from '../redux/slices/cartSlice';
+import { toggleWishlist, syncWishlist } from '../redux/slices/wishlistSlice';
 import { addToRecentlyViewed } from '../redux/slices/productSlice';
 import { RootState, AppDispatch } from '../redux/store';
 import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
@@ -25,6 +25,8 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
   const [product, setProduct] = useState(initialProduct);
   const dispatch = useDispatch<AppDispatch>();
   const wishlistItems = useSelector((state: RootState) => state.wishlist.items);
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const flatListRef = useRef<FlatList>(null);
 
   const isWishlisted = wishlistItems.some(item => item.id === product.id);
@@ -84,10 +86,27 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
 
   const handleToggleWishlist = () => {
     dispatch(toggleWishlist(product));
+    if (isAuthenticated) {
+      // Small timeout to let redux state update or pass new state directly
+      const nextWishlist = isWishlisted
+        ? wishlistItems.filter(item => item.id !== product.id)
+        : [...wishlistItems, product];
+      dispatch(syncWishlist(nextWishlist));
+    }
   };
 
   const handleAddToCart = () => {
     dispatch(addToCart({ ...product, quantity }));
+    if (isAuthenticated) {
+      const existingItem = cartItems.find(item => item.id === product.id);
+      let nextCart;
+      if (existingItem) {
+        nextCart = cartItems.map(item => item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item);
+      } else {
+        nextCart = [...cartItems, { ...product, quantity }];
+      }
+      dispatch(syncCart(nextCart));
+    }
     showToast(`${product.name} added to cart`, 'success');
   };
 

@@ -30,7 +30,7 @@ import { useTheme } from '../hooks/useTheme';
 
 const { width } = Dimensions.get('window');
 
-const HomeScreen = ({ navigation }: any) => {
+const HomeScreen = ({ navigation, route }: any) => {
   const insets = useSafeAreaInsets();
   const { colors, isDarkMode } = useTheme();
   const dispatch = useDispatch<AppDispatch>();
@@ -42,6 +42,8 @@ const HomeScreen = ({ navigation }: any) => {
   const [displayProducts, setDisplayProducts] = useState<Product[]>(products);
   const [isListening, setIsListening] = useState(false);
 
+  const filterParams = route.params;
+
   // Keep displayProducts in sync with products from Redux
   useEffect(() => {
     setDisplayProducts(products);
@@ -51,9 +53,14 @@ const HomeScreen = ({ navigation }: any) => {
   const styles = useMemo(() => createStyles(colors, insets), [colors, insets]);
 
   const loadData = useCallback(async () => {
-    dispatch(fetchProducts());
+    const params = filterParams ? {
+      minAge: filterParams.minAge,
+      maxAge: filterParams.maxAge
+    } : {};
+
+    dispatch(fetchProducts(params));
     dispatch(fetchAppConfig());
-  }, [dispatch]);
+  }, [dispatch, filterParams]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

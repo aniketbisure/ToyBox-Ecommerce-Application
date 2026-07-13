@@ -1,17 +1,34 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
+import React, { useState, useMemo, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, ActivityIndicator } from 'react-native';
 import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/useTheme';
 import { Review } from '../types';
+import apiClient from '../api/apiClient';
+import { showToast } from '../utils/toastService';
 
 const ReviewsScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const fetchReviews = async () => {
+    try {
+      const { data } = await apiClient.get('/products/myreviews');
+      setReviews(data);
+    } catch (error) {
+      showToast('Failed to load reviews', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -23,29 +40,33 @@ const ReviewsScreen = ({ navigation }: any) => {
         <View style={{ width: 40 }} />
       </View>
 
-      <FlatList
-        data={reviews}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 20 }}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.productName}>{item.product}</Text>
-            <View style={styles.ratingRow}>
-              {[1, 2, 3, 4, 5].map((s) => (
-                <Icon key={s} name="star" size={16} color={s <= item.rating ? '#FFD700' : colors.lightGray} />
-              ))}
-              <Text style={styles.date}>{item.date}</Text>
+      {loading ? (
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 50 }} />
+      ) : (
+        <FlatList
+          data={reviews}
+          keyExtractor={(item, index) => item.id || index.toString()}
+          contentContainerStyle={{ padding: 20 }}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Text style={styles.productName}>{item.product}</Text>
+              <View style={styles.ratingRow}>
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Icon key={s} name="star" size={16} color={s <= item.rating ? '#FFD700' : colors.lightGray} />
+                ))}
+                <Text style={styles.date}>{new Date(item.date).toLocaleDateString()}</Text>
+              </View>
+              <Text style={styles.comment}>{item.comment}</Text>
             </View>
-            <Text style={styles.comment}>{item.comment}</Text>
-          </View>
-        )}
-        ListEmptyComponent={
-          <View style={{ alignItems: 'center', marginTop: 100 }}>
-            <Icon name="star-outline" size={60} color={colors.lightGray} />
-            <Text style={{ ...FONTS.body, color: colors.gray, marginTop: 10 }}>You haven't reviewed any products yet.</Text>
-          </View>
-        }
-      />
+          )}
+          ListEmptyComponent={
+            <View style={{ alignItems: 'center', marginTop: 100 }}>
+              <Icon name="star-outline" size={60} color={colors.lightGray} />
+              <Text style={{ ...FONTS.body, color: colors.gray, marginTop: 10 }}>You haven't reviewed any products yet.</Text>
+            </View>
+          }
+        />
+      )}
     </View>
   );
 };

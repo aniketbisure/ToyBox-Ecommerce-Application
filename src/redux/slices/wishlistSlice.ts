@@ -1,4 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import apiClient from '../../api/apiClient';
+import { getProfile } from './authSlice';
 
 interface Product {
   id: string;
@@ -11,11 +13,27 @@ interface Product {
 
 interface WishlistState {
   items: Product[];
+  loading: boolean;
 }
 
 const initialState: WishlistState = {
   items: [],
+  loading: false,
 };
+
+export const syncWishlist = createAsyncThunk(
+  'wishlist/sync',
+  async (wishlistItems: Product[], { rejectWithValue }) => {
+    try {
+      const response = await apiClient.put('/users/wishlist', {
+        wishlist: wishlistItems.map(item => item.id)
+      });
+      return response.data; // This will be the populated wishlist products
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to sync wishlist');
+    }
+  }
+);
 
 const wishlistSlice = createSlice({
   name: 'wishlist',
@@ -33,6 +51,17 @@ const wishlistSlice = createSlice({
       state.items = state.items.filter(item => item.id !== action.payload);
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(syncWishlist.fulfilled, (state, action) => {
+        state.items = action.payload.map((p: any) => ({ ...p, id: p._id || p.id }));
+      })
+      .addCase(getProfile.fulfilled, (state, action) => {
+        if (action.payload.wishlist) {
+          state.items = action.payload.wishlist.map((p: any) => ({ ...p, id: p._id || p.id }));
+        }
+      });
+  }
 });
 
 export const { toggleWishlist, removeFromWishlist } = wishlistSlice.actions;
