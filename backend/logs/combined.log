@@ -25,3 +25,5 @@
 {"level":"info","message":"✅ MongoDB Connected","service":"toybox-backend","timestamp":"2026-07-13T09:38:24.800Z"}
 {"level":"info","message":"Starting scheduled order reconciliation job...","service":"toybox-backend","timestamp":"2026-07-13T10:30:00.227Z"}
 {"level":"info","message":"Found 0 stale pending orders for check.","service":"toybox-backend","timestamp":"2026-07-13T10:30:00.557Z"}
+{"level":"info","message":"🚀 Server running on port 5000","service":"toybox-backend","timestamp":"2026-07-13T10:36:44.017Z"}
+{"level":"info","message":"✅ MongoDB Connected","service":"toybox-backend","timestamp":"2026-07-13T10:36:44.961Z"}
