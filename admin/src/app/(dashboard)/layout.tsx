@@ -17,7 +17,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import api from "../../services/apiService";
+import Logo from "../../components/Logo";
 
 export default function DashboardLayout({
   children,
@@ -86,14 +86,7 @@ export default function DashboardLayout({
 
   const SidebarContent = () => (
     <>
-      <div className="flex items-center gap-3 mb-10 px-2">
-        <div className="relative w-12 h-12">
-          <img src="/logo.png" alt="ToyBox Logo" className="object-contain" />
-        </div>
-        <h1 className="font-black text-xl tracking-tight">
-          ToyBox <span className="text-primary">Admin</span>
-        </h1>
-      </div>
+      <Logo className="mb-10 px-2" size={48} />
 
       <nav className="flex-1 space-y-2">
         {navItems.map((item) => {
@@ -175,14 +168,7 @@ export default function DashboardLayout({
           >
             <Menu size={22} />
           </button>
-          <div className="flex items-center gap-2">
-            <div className="relative w-8 h-8">
-              <img src="/logo.png" alt="Logo" className="object-contain" />
-            </div>
-            <span className="font-black text-base tracking-tight">
-              ToyBox <span className="text-primary">Admin</span>
-            </span>
-          </div>
+          <Logo size={32} />
         </header>
 
         {/* Page Content */}

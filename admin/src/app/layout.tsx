@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "ToyBox Admin | Control Center",
   description: "High-end admin panel for ToyBox Store",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({

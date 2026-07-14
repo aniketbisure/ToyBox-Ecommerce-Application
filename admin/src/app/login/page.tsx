@@ -5,6 +5,7 @@ import { ShieldCheck, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import api from "../../services/apiService";
+import Logo from "../../components/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -45,12 +46,7 @@ export default function LoginPage() {
       >
         <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl shadow-primary/5 p-8 sm:p-10 border border-gray-100">
           <div className="flex flex-col items-center mb-8 sm:mb-10">
-            <div className="relative w-24 h-24 mb-4">
-              <img src="/logo.png" alt="ToyBox Logo" className="object-contain" />
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              ToyBox <span className="text-primary">Admin</span>
-            </h1>
+            <Logo size={96} className="flex-col mb-4" />
             <p className="text-gray-400 font-medium mt-1 text-sm">
               Authorized Personnel Only
             </p>
