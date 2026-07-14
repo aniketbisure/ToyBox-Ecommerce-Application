@@ -49,8 +49,9 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
 
   const fetchProductDetails = async () => {
     try {
-      const { data } = await api.get(`/products/${product.id}`);
-      setProduct(data);
+      const { data } = await api.get(`/products/${product.id || product._id}`);
+      const updatedProduct = { ...data, id: data.id || data._id };
+      setProduct(updatedProduct);
     } catch (e) {
       console.log('Error refreshing product details');
     }
@@ -345,7 +346,7 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
               </View>
               <TextInput
                 style={styles.commentInput}
-                placeholder="Your thoughts..."
+                placeholder="Write your review here..."
                 placeholderTextColor={colors.gray}
                 multiline
                 value={userComment}

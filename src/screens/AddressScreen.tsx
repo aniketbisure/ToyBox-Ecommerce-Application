@@ -67,6 +67,7 @@ const AddressScreen = ({ navigation }: any) => {
           <TextInput
             style={styles.input}
             placeholder="e.g. 123, Toy Lane"
+            placeholderTextColor={COLORS.gray}
             value={address.street}
             onChangeText={(text) => setAddress({...address, street: text})}
           />
@@ -78,6 +79,7 @@ const AddressScreen = ({ navigation }: any) => {
             <TextInput
               style={styles.input}
               placeholder="Mumbai"
+              placeholderTextColor={COLORS.gray}
               value={address.city}
               onChangeText={(text) => setAddress({...address, city: text})}
             />
@@ -87,6 +89,7 @@ const AddressScreen = ({ navigation }: any) => {
             <TextInput
               style={styles.input}
               placeholder="400001"
+              placeholderTextColor={COLORS.gray}
               keyboardType="numeric"
               value={address.zip}
               onChangeText={(text) => setAddress({...address, zip: text})}
@@ -99,6 +102,7 @@ const AddressScreen = ({ navigation }: any) => {
           <TextInput
             style={styles.input}
             placeholder="Maharashtra"
+            placeholderTextColor={COLORS.gray}
             value={address.state}
             onChangeText={(text) => setAddress({...address, state: text})}
           />

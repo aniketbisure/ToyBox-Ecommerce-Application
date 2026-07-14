@@ -1,29 +1,28 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useTheme } from '../../hooks/useTheme';
-import { FONTS } from '../../constants/theme';
+import { View, Image, StyleSheet } from 'react-native';
+import { moderateScale } from '../../utils/responsive';
 
-const Logo = () => {
-  const { colors } = useTheme();
+interface LogoProps {
+  size?: number;
+  style?: any;
+}
+
+const Logo = ({ size = 40, style }: LogoProps) => {
+  const scaledSize = moderateScale(size);
   return (
-    <View style={styles.container}>
-      <Icon name="toy-brick-outline" size={32} color={colors.primary} />
-      <Text style={[styles.text, { color: colors.text }]}>ToyBox</Text>
+    <View style={[styles.container, style]}>
+      <Image
+        source={require('../../assets/logo.png')}
+        style={{ width: scaledSize, height: scaledSize, resizeMode: 'contain' }}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
     alignItems: 'center',
-  },
-  text: {
-    ...FONTS.h2,
-    marginLeft: 8,
-    fontSize: 22,
-    fontWeight: '900',
+    justifyContent: 'center',
   },
 });
 

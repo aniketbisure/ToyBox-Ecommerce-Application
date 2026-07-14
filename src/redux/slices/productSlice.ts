@@ -105,13 +105,23 @@ const productSlice = createSlice({
       state.filteredProducts = action.payload;
     },
     addToRecentlyViewed: (state, action: PayloadAction<Product>) => {
-      const existingIndex = state.recentlyViewed.findIndex(p => p.id === action.payload.id);
+      const newProd = action.payload;
+      const newId = newProd.id || (newProd as any)._id;
+      if (!newId) return;
+
+      // Ensure the product object we store has the id field
+      const productToStore = { ...newProd, id: newId };
+
+      const existingIndex = state.recentlyViewed.findIndex(p => {
+        const pId = p.id || (p as any)._id;
+        return pId === newId;
+      });
+
       if (existingIndex !== -1) {
-        // Move to top if already exists
         state.recentlyViewed.splice(existingIndex, 1);
       }
-      state.recentlyViewed.unshift(action.payload);
-      // Keep only last 10 items
+      state.recentlyViewed.unshift(productToStore);
+
       if (state.recentlyViewed.length > 10) {
         state.recentlyViewed.pop();
       }

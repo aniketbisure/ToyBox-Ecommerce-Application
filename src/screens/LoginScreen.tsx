@@ -21,6 +21,7 @@ import { moderateScale } from '../utils/responsive';
 import { showToast } from '../utils/toastService';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CustomButton from '../components/CustomButton';
+import Logo from '../components/common/Logo';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LoginScreenNavigationProp } from '../types/navigation';
 
@@ -62,14 +63,7 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <View style={styles.logoWrapper}>
-            <View style={styles.logoCircle}>
-              <Icon name="toy-brick" size={50} color={COLORS.primary} />
-            </View>
-            <View style={[styles.logoCircleSmall, { backgroundColor: COLORS.secondary }]} />
-            <View style={[styles.logoCircleSmall, { backgroundColor: COLORS.accent, right: 10, top: 0 }]} />
-          </View>
-          <Text style={styles.title}>ToyBox</Text>
+          <Logo size={120} />
           <Text style={styles.subtitle}>Unlock a world of play for your little ones</Text>
         </View>
 

@@ -9,6 +9,8 @@ export const COLORS = {
   shadow: '#000000',
   white: '#FFFFFF',
   black: '#000000',
+  gray: '#A0AEC0',
+  lightGray: '#EDF2F7',
 };
 
 export const LIGHT_THEME = {

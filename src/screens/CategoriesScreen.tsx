@@ -85,6 +85,7 @@ const CategoriesScreen = ({ navigation }: any) => {
             <TextInput
               style={styles.miniSearchInput}
               placeholder="Search..."
+              placeholderTextColor={COLORS.gray}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />

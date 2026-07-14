@@ -5,7 +5,7 @@ import { logoutUser } from '../redux/slices/authSlice';
 import { RootState, AppDispatch } from '../redux/store';
 import { COLORS, FONTS, SHADOWS } from '../constants/theme';
 import { moderateScale } from '../utils/responsive';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList, ProfileStackNavigationProp } from '../types/navigation';
 import { showToast } from '../utils/toastService';
@@ -30,23 +30,26 @@ const ProfileScreen = () => {
 
   const styles = useMemo(() => createStyles(colors, insets), [colors, insets]);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const [ordersRes, reviewsRes] = await Promise.all([
-          api.get('/orders/myorders'),
-          api.get('/products/myreviews')
-        ]);
-        setOrderCount(ordersRes.data.length);
-        setReviewCount(reviewsRes.data.length);
-      } catch (e) {
-        console.log('Error fetching profile stats');
-      }
-    };
-    fetchStats();
-    // Wishlist count comes from persisted redux state
-    setWishlistCount(wishlistItems.length);
-  }, [wishlistItems.length]);
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchStats = async () => {
+        try {
+          const [ordersRes, reviewsRes] = await Promise.all([
+            api.get('/orders/myorders'),
+            api.get('/products/myreviews')
+          ]);
+          setOrderCount(ordersRes.data.length);
+          setReviewCount(reviewsRes.data.length);
+        } catch (e) {
+          console.log('Error fetching profile stats');
+        }
+      };
+
+      fetchStats();
+      setWishlistCount(wishlistItems.length);
+      return () => {};
+    }, [wishlistItems.length])
+  );
 
   const menuOptions = [
     { name: 'My Orders', icon: 'package-variant-closed', color: '#FFB8B8', screen: 'MyOrders' },

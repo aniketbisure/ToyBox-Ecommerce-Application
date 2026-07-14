@@ -10,7 +10,7 @@ import configReducer from './slices/configSlice';
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['auth', 'cart', 'wishlist', 'config'], // Added config for settings persistence
+  whitelist: ['auth', 'cart', 'wishlist', 'config', 'products'], // Added products for recentlyViewed persistence
 };
 
 const rootReducer = combineReducers({

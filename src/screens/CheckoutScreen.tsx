@@ -25,6 +25,7 @@ const CheckoutScreen = ({ navigation }: any) => {
   const configState = useSelector((state: RootState) => state.config);
   const razorpayKey = getRazorpayKey(configState);
   const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'Razorpay' | 'COD'>('Razorpay');
 
   const StepIndicator = () => (
     <View style={styles.stepContainer}>
@@ -73,8 +74,16 @@ const CheckoutScreen = ({ navigation }: any) => {
           postalCode: user?.address?.zip || '400001',
           country: user?.address?.country || 'India'
         },
-        paymentMethod: 'Razorpay'
+        paymentMethod: paymentMethod
       });
+
+      if (paymentMethod === 'COD') {
+        setLoading(false);
+        showToast('Order Placed Successfully!', 'success');
+        dispatch(clearCart());
+        navigation.replace('OrderSuccess');
+        return;
+      }
 
       const options = {
         description: 'Premium Kids Toys Purchase',
@@ -162,8 +171,8 @@ const CheckoutScreen = ({ navigation }: any) => {
           <Text style={styles.sectionTitle}>Order Summary</Text>
           <View style={styles.summaryCard}>
             {items.map((item, index) => (
-              <View key={item.id} style={styles.itemRow}>
-                <Text style={styles.itemName}>{item.name} x{item.quantity}</Text>
+              <View key={item.id || index} style={styles.itemRow}>
+                <Text style={styles.itemName} numberOfLines={1}>{item.name} x{item.quantity}</Text>
                 <Text style={styles.itemPrice}>₹{(item.price * item.quantity).toFixed(2)}</Text>
               </View>
             ))}
@@ -178,10 +187,41 @@ const CheckoutScreen = ({ navigation }: any) => {
         {/* Payment Method */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Payment Method</Text>
-          <TouchableOpacity style={styles.paymentCard}>
-            <Icon name="credit-card-outline" size={24} color={COLORS.secondary} />
-            <Text style={styles.paymentText}>Razorpay / Cards / UPI</Text>
-            <Icon name="check-circle" size={24} color={COLORS.success} style={{ marginLeft: 'auto' }} />
+
+          <TouchableOpacity
+            style={[styles.paymentCard, paymentMethod === 'COD' && styles.selectedCard]}
+            onPress={() => setPaymentMethod('COD')}
+          >
+            <View style={[styles.paymentIconContainer, { backgroundColor: COLORS.primary + '15' }]}>
+              <Icon name="truck-delivery-outline" size={24} color={COLORS.primary} />
+            </View>
+            <View style={styles.paymentInfo}>
+              <Text style={styles.paymentName}>Cash on Delivery</Text>
+              <Text style={styles.paymentDesc}>Pay when you receive the toys</Text>
+            </View>
+            <Icon
+              name={paymentMethod === 'COD' ? "check-circle" : "circle-outline"}
+              size={24}
+              color={paymentMethod === 'COD' ? COLORS.success : COLORS.gray}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.paymentCard, paymentMethod === 'Razorpay' && styles.selectedCard]}
+            onPress={() => setPaymentMethod('Razorpay')}
+          >
+            <View style={[styles.paymentIconContainer, { backgroundColor: COLORS.secondary + '15' }]}>
+              <Icon name="credit-card-outline" size={24} color={COLORS.secondary} />
+            </View>
+            <View style={styles.paymentInfo}>
+              <Text style={styles.paymentName}>Razorpay / Cards / UPI</Text>
+              <Text style={styles.paymentDesc}>Secure online payment</Text>
+            </View>
+            <Icon
+              name={paymentMethod === 'Razorpay' ? "check-circle" : "circle-outline"}
+              size={24}
+              color={paymentMethod === 'Razorpay' ? COLORS.success : COLORS.gray}
+            />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -345,14 +385,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORS.white,
     borderRadius: 20,
-    padding: 20,
+    padding: 16,
     ...SHADOWS.medium,
+    marginBottom: 15,
+    borderWidth: 2,
+    borderColor: 'transparent',
   },
-  paymentText: {
-    ...FONTS.body,
+  selectedCard: {
+    borderColor: COLORS.primary + '50',
+  },
+  paymentIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  paymentInfo: {
+    flex: 1,
     marginLeft: 15,
-    fontWeight: '700',
+  },
+  paymentName: {
+    ...FONTS.h3,
+    fontSize: 15,
     color: COLORS.text,
+  },
+  paymentDesc: {
+    ...FONTS.caption,
+    fontSize: 11,
+    color: COLORS.gray,
+    marginTop: 2,
   },
   footer: {
     padding: 25,

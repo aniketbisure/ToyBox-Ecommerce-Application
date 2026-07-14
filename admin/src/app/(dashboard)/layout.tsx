@@ -87,8 +87,8 @@ export default function DashboardLayout({
   const SidebarContent = () => (
     <>
       <div className="flex items-center gap-3 mb-10 px-2">
-        <div className="bg-primary p-2 rounded-xl">
-          <ShieldCheck className="text-white" size={24} />
+        <div className="relative w-12 h-12">
+          <img src="/logo.png" alt="ToyBox Logo" className="object-contain" />
         </div>
         <h1 className="font-black text-xl tracking-tight">
           ToyBox <span className="text-primary">Admin</span>
@@ -176,8 +176,8 @@ export default function DashboardLayout({
             <Menu size={22} />
           </button>
           <div className="flex items-center gap-2">
-            <div className="bg-primary p-1.5 rounded-lg">
-              <ShieldCheck className="text-white" size={18} />
+            <div className="relative w-8 h-8">
+              <img src="/logo.png" alt="Logo" className="object-contain" />
             </div>
             <span className="font-black text-base tracking-tight">
               ToyBox <span className="text-primary">Admin</span>

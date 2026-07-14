@@ -45,8 +45,8 @@ export default function LoginPage() {
       >
         <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl shadow-primary/5 p-8 sm:p-10 border border-gray-100">
           <div className="flex flex-col items-center mb-8 sm:mb-10">
-            <div className="bg-primary p-3 sm:p-4 rounded-2xl sm:rounded-3xl mb-4 shadow-lg shadow-primary/30">
-              <ShieldCheck className="text-white" size={36} />
+            <div className="relative w-24 h-24 mb-4">
+              <img src="/logo.png" alt="ToyBox Logo" className="object-contain" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
               ToyBox <span className="text-primary">Admin</span>

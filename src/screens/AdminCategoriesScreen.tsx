@@ -80,6 +80,7 @@ const AdminCategoriesScreen = ({ navigation }: any) => {
         <TextInput
           style={styles.input}
           placeholder="Enter new category name..."
+          placeholderTextColor={COLORS.gray}
           value={newCategory}
           onChangeText={setNewCategory}
         />

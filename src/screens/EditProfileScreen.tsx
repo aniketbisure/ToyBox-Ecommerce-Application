@@ -62,6 +62,8 @@ const EditProfileScreen = ({ navigation }: any) => {
           <Text style={[styles.label, { color: colors.text }]}>Full Name</Text>
           <TextInput
             style={[styles.input, { color: colors.text }]}
+            placeholder="Full Name"
+            placeholderTextColor={colors.gray}
             value={formData.name}
             onChangeText={(text) => setFormData({...formData, name: text})}
           />
@@ -71,6 +73,8 @@ const EditProfileScreen = ({ navigation }: any) => {
           <Text style={[styles.label, { color: colors.text }]}>Email Address</Text>
           <TextInput
             style={[styles.input, { color: colors.text }]}
+            placeholder="Email Address"
+            placeholderTextColor={colors.gray}
             value={formData.email}
             keyboardType="email-address"
             autoCapitalize="none"
