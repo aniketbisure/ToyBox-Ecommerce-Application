@@ -58,6 +58,8 @@ export interface IProduct extends Document {
   materialType: string;
   educationalObjective?: string;
   assemblyRequired: boolean;
+  isDeal: boolean;
+  isNewArrival: boolean;
 
   // 9. Compliance (Admin Only)
   cpcCertificateUrl?: string;
@@ -133,6 +135,8 @@ const ProductSchema: Schema = new Schema({
   materialType: { type: String },
   educationalObjective: { type: String },
   assemblyRequired: { type: Boolean, default: false },
+  isDeal: { type: Boolean, default: false },
+  isNewArrival: { type: Boolean, default: false },
 
   cpcCertificateUrl: { type: String },
   testReportUrl: { type: String },

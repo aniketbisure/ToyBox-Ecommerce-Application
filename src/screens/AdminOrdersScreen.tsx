@@ -224,5 +224,3 @@ const createStyles = (colors: any) => StyleSheet.create({
 });
 
 export default AdminOrdersScreen;
-
-export default AdminOrdersScreen;

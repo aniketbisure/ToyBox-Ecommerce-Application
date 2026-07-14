@@ -108,7 +108,7 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
 
           <TouchableOpacity
             style={styles.forgotBtn}
-            onPress={() => showToast('Password reset coming soon', 'info')}
+            onPress={() => navigation.navigate('ForgotPassword' as any)}
           >
             <Text style={styles.forgotText}>Forgot Password?</Text>
           </TouchableOpacity>

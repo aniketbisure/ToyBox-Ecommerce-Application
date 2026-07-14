@@ -7,6 +7,23 @@ import CustomButton from '../components/CustomButton';
 const OrderSuccessScreen = ({ navigation }: any) => {
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
+  const handleContinueShopping = () => {
+    // Reset CartStack to first screen before switching tabs
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'CartScreen' }],
+    });
+    navigation.navigate('HomeTab');
+  };
+
+  const handleTrackOrder = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'CartScreen' }],
+    });
+    navigation.navigate('ProfileTab');
+  };
+
   // Disable back hardware button on Android
   useEffect(() => {
     Animated.spring(scaleAnim, {
@@ -17,7 +34,7 @@ const OrderSuccessScreen = ({ navigation }: any) => {
     }).start();
 
     const backAction = () => {
-      navigation.navigate('HomeTab');
+      handleContinueShopping();
       return true;
     };
 
@@ -57,13 +74,13 @@ const OrderSuccessScreen = ({ navigation }: any) => {
 
         <CustomButton
           title="Continue Shopping"
-          onPress={() => navigation.navigate('HomeTab')}
+          onPress={handleContinueShopping}
           style={styles.btn}
         />
 
         <TouchableOpacity
           style={styles.trackBtn}
-          onPress={() => navigation.navigate('ProfileTab')}
+          onPress={handleTrackOrder}
         >
           <Text style={styles.trackText}>Track My Order</Text>
         </TouchableOpacity>

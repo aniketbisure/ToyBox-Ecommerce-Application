@@ -59,10 +59,10 @@ const SettingsScreen = ({ navigation }: any) => {
   const styles = createStyles(colors);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Icon name="arrow-left" size={26} color={colors.text} />
+          <Icon name="arrow-left" size={28} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Settings</Text>
         <View style={{ width: 40 }} />
@@ -95,9 +95,27 @@ const SettingsScreen = ({ navigation }: any) => {
 
 const createStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 15 },
-  backBtn: { padding: 5 },
-  headerTitle: { ...FONTS.h2, fontSize: 20, color: colors.text },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    paddingBottom: 15,
+    backgroundColor: colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.lightGray,
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    ...FONTS.h2,
+    fontSize: 20,
+    color: colors.text,
+  },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.card, padding: 15, borderRadius: 12, marginBottom: 10, ...SHADOWS.light },
   name: { ...FONTS.body, marginLeft: 15, fontWeight: '600', color: colors.text },
   dangerRow: { flexDirection: 'row', alignItems: 'center', marginTop: 20, padding: 15 },

@@ -9,6 +9,8 @@ export const getProducts = async (req: Request, res: Response) => {
     const category = req.query.category;
     const minAge = Number(req.query.minAge);
     const maxAge = Number(req.query.maxAge);
+    const isDeal = req.query.isDeal === 'true';
+    const isNewArrival = req.query.isNewArrival === 'true';
 
     const query: any = { isDeleted: false };
 
@@ -24,11 +26,19 @@ export const getProducts = async (req: Request, res: Response) => {
       query.minimumAge = { $gte: minAge, $lte: maxAge };
     }
 
+    if (isDeal) {
+      query.isDeal = true;
+    }
+
+    if (isNewArrival) {
+      query.isNewArrival = true;
+    }
+
     const count = await Product.countDocuments(query);
     const products = await Product.find(query)
       .limit(pageSize)
       .skip(pageSize * (page - 1))
-      .sort({ createdAt: -1 });
+      .sort({ subCategory: 1, createdAt: -1 });
 
     res.json({ products, page, pages: Math.ceil(count / pageSize), total: count });
   } catch (error) {
@@ -58,6 +68,7 @@ export const createProduct = async (req: Request, res: Response) => {
       listPrice, price, salePrice, stock,
       materialType, educationalObjective, assemblyRequired,
       cpcCertificateUrl, testReportUrl,
+      isDeal, isNewArrival
     } = req.body;
 
     const product = await Product.create({
@@ -70,6 +81,8 @@ export const createProduct = async (req: Request, res: Response) => {
       listPrice, price, salePrice, stock,
       materialType, educationalObjective, assemblyRequired,
       cpcCertificateUrl, testReportUrl,
+      isDeal: isDeal || false,
+      isNewArrival: isNewArrival || false
     });
     res.status(201).json(product);
   } catch (error) {
@@ -89,6 +102,7 @@ export const updateProduct = async (req: Request, res: Response) => {
       listPrice, price, salePrice, stock,
       materialType, educationalObjective, assemblyRequired,
       cpcCertificateUrl, testReportUrl,
+      isDeal, isNewArrival
     } = req.body;
 
     const product = await Product.findByIdAndUpdate(
@@ -103,6 +117,7 @@ export const updateProduct = async (req: Request, res: Response) => {
         listPrice, price, salePrice, stock,
         materialType, educationalObjective, assemblyRequired,
         cpcCertificateUrl, testReportUrl,
+        isDeal, isNewArrival
       },
       { new: true }
     );
@@ -183,5 +198,61 @@ export const getMyReviews = async (req: AuthRequest, res: Response) => {
     res.json(userReviews);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching reviews', error });
+  }
+};
+
+// @desc    Get all reviews for moderation
+// @route   GET /api/products/admin/reviews
+// @access  Private/Admin
+export const getAllReviews = async (req: AuthRequest, res: Response) => {
+  try {
+    const products = await Product.find({ 'reviews.0': { $exists: true } });
+    const allReviews: any[] = [];
+
+    products.forEach(p => {
+      p.reviews.forEach(r => {
+        allReviews.push({
+          id: r._id,
+          productId: p._id,
+          productName: p.name,
+          user: r.user,
+          name: r.name,
+          rating: r.rating,
+          comment: r.comment,
+          createdAt: (r as any).createdAt
+        });
+      });
+    });
+
+    res.json(allReviews.sort((a, b) => b.createdAt - a.createdAt));
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching reviews', error });
+  }
+};
+
+// @desc    Delete a review
+// @route   DELETE /api/products/:productId/reviews/:reviewId
+// @access  Private/Admin
+export const deleteReview = async (req: AuthRequest, res: Response) => {
+  try {
+    const product = await Product.findById(req.params.productId);
+
+    if (product) {
+      product.reviews = product.reviews.filter(
+        (rev) => rev._id!.toString() !== req.params.reviewId.toString()
+      );
+
+      product.numReviews = product.reviews.length;
+      product.rating = product.reviews.length > 0
+        ? product.reviews.reduce((acc, item) => item.rating + acc, 0) / product.reviews.length
+        : 0;
+
+      await product.save();
+      res.json({ message: 'Review removed' });
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting review', error });
   }
 };

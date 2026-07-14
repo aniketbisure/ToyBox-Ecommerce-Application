@@ -11,6 +11,8 @@ import userRoutes from './routes/userRoutes';
 import configRoutes from './routes/configRoutes';
 import orderRoutes from './routes/orderRoutes';
 import uploadRoutes from './routes/uploadRoutes';
+import supportRoutes from './routes/supportRoutes';
+import adminRoutes from './routes/adminRoutes';
 import { notFound, errorHandler } from './middleware/errorMiddleware';
 import logger from './utils/logger';
 import { initOrderReconciliationJob } from './jobs/reconcileJob';
@@ -85,6 +87,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/support', supportRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Static folders
 const uploadsDir = path.join(process.cwd(), 'uploads');

@@ -15,8 +15,8 @@ import SplashScreen from '../screens/SplashScreen';
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const darkMode = useSelector((state: RootState) => state.config.settings.darkMode);
+  const { isAuthenticated = false, user = null } = useSelector((state: RootState) => state.auth) || {};
+  const darkMode = useSelector((state: RootState) => state.config?.settings?.darkMode ?? false);
   const [appState, setAppState] = useState<'splash' | 'onboarding' | 'main'>('splash');
 
   useEffect(() => {

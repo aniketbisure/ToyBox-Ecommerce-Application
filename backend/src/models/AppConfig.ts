@@ -42,7 +42,9 @@ const BannerSchema = new Schema({
   title: { type: String, required: true },
   subtitle: { type: String },
   link: { type: String },
-  isActive: { type: Boolean, default: true }
+  isActive: { type: Boolean, default: true },
+  startDate: { type: Date },
+  endDate: { type: Date }
 });
 
 const AppConfigSchema: Schema = new Schema({

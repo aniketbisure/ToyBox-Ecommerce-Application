@@ -7,7 +7,9 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
     const user = await User.findById(req.user?.id)
       .select('-password')
       .populate('wishlist')
-      .populate('cart.product');
+      .populate('cart.product')
+      .populate('savedItems.product')
+      .populate('recentlyViewed');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -19,11 +21,13 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
 
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
-    const { name, email, address, fcmToken } = req.body;
+    const { name, email, addresses, phoneNumbers, paymentMethods, fcmToken } = req.body;
     const update: any = {};
     if (name) update.name = name;
     if (email) update.email = email;
-    if (address) update.address = address;
+    if (addresses) update.addresses = addresses;
+    if (phoneNumbers) update.phoneNumbers = phoneNumbers;
+    if (paymentMethods) update.paymentMethods = paymentMethods;
     if (fcmToken) update.fcmToken = fcmToken;
 
     const user = await User.findByIdAndUpdate(
@@ -87,5 +91,33 @@ export const updateCart = async (req: AuthRequest, res: Response) => {
     res.json(user?.cart);
   } catch (error) {
     res.status(500).json({ message: 'Error updating cart', error });
+  }
+};
+
+export const updateSavedItems = async (req: AuthRequest, res: Response) => {
+  try {
+    const { savedItems } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.user?.id,
+      { savedItems },
+      { new: true }
+    ).populate('savedItems.product');
+    res.json(user?.savedItems);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating saved items', error });
+  }
+};
+
+export const updateRecentlyViewed = async (req: AuthRequest, res: Response) => {
+  try {
+    const { recentlyViewed } = req.body;
+    const user = await User.findByIdAndUpdate(
+      req.user?.id,
+      { recentlyViewed },
+      { new: true }
+    ).populate('recentlyViewed');
+    res.json(user?.recentlyViewed);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating recently viewed', error });
   }
 };

@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  TextInput
+  TextInput,
+  Platform
 } from 'react-native';
 import { COLORS, FONTS, SHADOWS } from '../constants/theme';
 import { moderateScale } from '../utils/responsive';
@@ -18,6 +19,7 @@ import { RootState } from '../redux/store';
 
 const CategoriesScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
+  const bottomTabHeight = Platform.OS === 'ios' ? 85 : 70;
   const { categories, ageRanges } = useSelector((state: RootState) => state.config);
   const { products } = useSelector((state: RootState) => state.products);
   const [selectedCategory, setSelectedCategory] = useState('All Toys');
@@ -29,14 +31,17 @@ const CategoriesScreen = ({ navigation }: any) => {
   ];
 
   const categoryProducts = products.filter(p => {
-    const matchesCategory = selectedCategory === 'All Toys' || p.category === selectedCategory;
+    const pCat = (p.category || '').trim().toLowerCase();
+    const sCat = selectedCategory.trim().toLowerCase();
+
+    const matchesCategory = selectedCategory === 'All Toys' || pCat === sCat;
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
   const handleAgeRangePress = (ageRange: any) => {
     navigation.navigate('HomeTab', {
-      screen: 'Home',
+      screen: 'HomeScreen',
       params: { minAge: ageRange.minAge, maxAge: ageRange.maxAge, title: ageRange.name }
     });
   };
@@ -96,16 +101,14 @@ const CategoriesScreen = ({ navigation }: any) => {
         </View>
       </View>
 
-      <View style={styles.mainContent}>
+      <View style={[styles.mainContent, { paddingBottom: bottomTabHeight }]}>
         {/* Sidebar */}
         <View style={styles.sidebar}>
           <FlatList
             data={sidebarItems}
             renderItem={renderSidebarItem}
             keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={true}
-            persistentScrollbar={true}
-            indicatorStyle="black"
+            showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 20 }}
           />
         </View>
@@ -113,10 +116,8 @@ const CategoriesScreen = ({ navigation }: any) => {
         {/* Content Area */}
         <ScrollView
           style={styles.contentArea}
-          showsVerticalScrollIndicator={true}
-          persistentScrollbar={true}
-          indicatorStyle="black"
-          contentContainerStyle={{ paddingBottom: 100 }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
         >
           <Text style={styles.sectionTitle}>{selectedCategory} Collection</Text>
           <View style={styles.grid}>
@@ -172,167 +173,130 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.lightGray,
+    borderBottomColor: '#F0F0F0',
+    backgroundColor: COLORS.white,
   },
   headerTitle: {
     ...FONTS.h2,
-    fontSize: 20,
+    fontSize: 22,
+    marginBottom: 12,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-    justifyContent: 'flex-end',
   },
   miniSearch: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0F0F0',
-    borderRadius: 10,
+    backgroundColor: '#F0F2F2',
+    borderRadius: 8,
     paddingHorizontal: 10,
     flex: 1,
-    marginHorizontal: 10,
-    height: 36,
+    height: 44,
+    borderWidth: 1,
+    borderColor: '#D5D9D9',
   },
   miniSearchInput: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 14,
     paddingVertical: 0,
     color: COLORS.text,
+    marginLeft: 8,
   },
   headerIcon: {
-    marginLeft: 5,
+    marginLeft: 12,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F0F2F2',
+    borderRadius: 8,
   },
   mainContent: {
     flex: 1,
     flexDirection: 'row',
   },
   sidebar: {
-    width: 100,
-    backgroundColor: '#F8F9FD',
+    width: 90,
+    backgroundColor: '#F7F8F9',
     borderRightWidth: 1,
-    borderRightColor: '#F0F0F0',
+    borderRightColor: '#E0E0E0',
   },
   sidebarItem: {
     alignItems: 'center',
-    paddingVertical: 18,
-    position: 'relative',
+    paddingVertical: 15,
+    paddingHorizontal: 5,
+    borderLeftWidth: 4,
+    borderLeftColor: 'transparent',
   },
   activeSidebarItem: {
     backgroundColor: COLORS.white,
+    borderLeftColor: COLORS.primary,
   },
   iconCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 18,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
-    ...SHADOWS.small,
-    marginBottom: 8,
-  },
-  activeIconCircle: {
-    backgroundColor: COLORS.primary + '15',
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   sidebarText: {
-    ...FONTS.caption,
     fontSize: 10,
     textAlign: 'center',
-    paddingHorizontal: 5,
     fontWeight: '600',
-    color: COLORS.gray,
-  },
-  activeSidebarText: {
-    color: COLORS.primary,
-    fontWeight: '800',
-  },
-  activeIndicator: {
-    position: 'absolute',
-    left: 0,
-    top: 18,
-    bottom: 18,
-    width: 4,
-    backgroundColor: COLORS.primary,
-    borderTopRightRadius: 4,
-    borderBottomRightRadius: 4,
+    color: '#565959',
   },
   contentArea: {
     flex: 1,
     backgroundColor: COLORS.white,
-    padding: 15,
+    padding: 12,
   },
   sectionTitle: {
     ...FONTS.h3,
-    fontSize: 18,
+    fontSize: 16,
     marginBottom: 15,
     marginTop: 5,
     color: COLORS.text,
+    fontWeight: '800',
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  gridItem: {
-    width: '30%',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  itemImageContainer: {
-    width: 65,
-    height: 65,
-    borderRadius: 20,
-    backgroundColor: '#F7F8FA',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-    ...SHADOWS.light,
-  },
-  itemLabel: {
-    ...FONTS.caption,
-    fontSize: 11,
-    textAlign: 'center',
-    fontWeight: '600',
-    color: COLORS.text,
-  },
   gridItemLarge: {
     width: '48%',
     backgroundColor: COLORS.white,
-    borderRadius: 20,
-    padding: 10,
-    marginBottom: 15,
-    ...SHADOWS.medium,
-    alignItems: 'center',
+    borderRadius: 12,
+    padding: 8,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: '#E0E0E0',
+    alignItems: 'center',
   },
   largeItemImage: {
     width: '100%',
     aspectRatio: 1,
-    backgroundColor: '#F9F9F9',
-    borderRadius: 15,
+    backgroundColor: '#F7F8F9',
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
-  notifyBtn: {
-    backgroundColor: COLORS.secondary,
-    paddingHorizontal: 5,
-    paddingVertical: 3,
-    borderRadius: 4,
-    marginTop: 5,
+  itemLabel: {
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '500',
+    color: COLORS.text,
+    marginTop: 2,
   },
-  notifyText: {
-    color: COLORS.white,
-    fontSize: 8,
-    fontWeight: '700',
-  }
 });
 
 export default CategoriesScreen;

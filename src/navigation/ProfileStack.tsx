@@ -7,6 +7,7 @@ import PaymentMethodsScreen from '../screens/PaymentMethodsScreen';
 import ReviewsScreen from '../screens/ReviewsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
+import SupportScreen from '../screens/SupportScreen';
 
 const Stack = createStackNavigator();
 
@@ -20,6 +21,7 @@ const ProfileStack = () => {
       <Stack.Screen name="Reviews" component={ReviewsScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+      <Stack.Screen name="Support" component={SupportScreen} />
     </Stack.Navigator>
   );
 };

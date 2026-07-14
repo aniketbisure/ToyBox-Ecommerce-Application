@@ -6,12 +6,19 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Image
+  Image,
+  Modal,
+  TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert
 } from 'react-native';
 import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
 import { moderateScale } from '../utils/responsive';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDispatch } from 'react-redux';
 import apiClient from '../api/apiClient';
 import { showToast } from '../utils/toastService';
 import { useTheme } from '../hooks/useTheme';
@@ -19,6 +26,7 @@ import { Order } from '../types';
 
 const MyOrdersScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
+  const dispatch = useDispatch();
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -40,6 +48,29 @@ const MyOrdersScreen = ({ navigation }: any) => {
     }
   };
 
+  const handleCancelOrder = (orderId: string) => {
+    Alert.alert(
+      'Cancel Order',
+      'Are you sure you want to cancel this order?',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes, Cancel',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await apiClient.put(`/orders/${orderId}/cancel`);
+              showToast('Order cancelled', 'success');
+              fetchMyOrders();
+            } catch (error) {
+              showToast('Failed to cancel order', 'error');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const StatusTimeline = ({ delivered }: { delivered: boolean }) => (
     <View style={styles.timelineContainer}>
       <View style={styles.timelineItem}>
@@ -58,6 +89,20 @@ const MyOrdersScreen = ({ navigation }: any) => {
       </View>
     </View>
   );
+
+  const handleBuyAgain = (item: Order) => {
+    item.orderItems.forEach(prod => {
+      dispatch({ type: 'cart/addToCart', payload: {
+        id: prod.product,
+        name: prod.name,
+        price: prod.price,
+        image: prod.image,
+        quantity: prod.quantity
+      }});
+    });
+    showToast('Items added to cart', 'success');
+    navigation.navigate('CartTab');
+  };
 
   const renderOrderItem = ({ item }: { item: Order }) => (
     <View style={styles.orderCard}>
@@ -87,17 +132,40 @@ const MyOrdersScreen = ({ navigation }: any) => {
         ))}
       </View>
 
+      <View style={styles.divider} />
+
+      {/* Shipping Details Section */}
+      <View style={styles.shippingSection}>
+        <View style={styles.shippingHeader}>
+          <Text style={styles.shippingTitle}>Shipping Address</Text>
+        </View>
+        <Text style={styles.shippingText}>
+          {item.shippingAddress.address}, {item.shippingAddress.city} - {item.shippingAddress.postalCode}
+        </Text>
+        {item.contactNumber && <Text style={styles.shippingText}>Phone: {item.contactNumber}</Text>}
+      </View>
+
       <View style={styles.footer}>
-        <Text style={styles.totalText}>Total Amount: ₹{item.totalPrice.toFixed(2)}</Text>
+        <View>
+          <Text style={styles.totalText}>Total Amount: ₹{item.totalPrice.toFixed(2)}</Text>
+          <TouchableOpacity style={{marginTop: 5}} onPress={() => handleBuyAgain(item)}>
+            <Text style={styles.buyAgainBtn}>Buy Again</Text>
+          </TouchableOpacity>
+        </View>
+        {!item.isDelivered && (
+          <TouchableOpacity onPress={() => handleCancelOrder(item._id)}>
+            <Text style={styles.cancelText}>Cancel Order</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Icon name="arrow-left" size={26} color={colors.text} />
+          <Icon name="arrow-left" size={28} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Orders</Text>
         <View style={{ width: 40 }} />
@@ -139,15 +207,21 @@ const createStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: moderateScale(20),
-    paddingBottom: moderateScale(15),
+    paddingHorizontal: 15,
+    paddingBottom: 15,
+    backgroundColor: colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.lightGray,
   },
   backBtn: {
-    padding: 5,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
     ...FONTS.h2,
-    fontSize: moderateScale(20),
+    fontSize: 20,
     color: colors.text,
   },
   listContent: {
@@ -247,6 +321,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.lightGray,
     paddingTop: 10,
+    alignItems: 'center',
   },
   dateText: {
     ...FONTS.caption,
@@ -256,6 +331,41 @@ const createStyles = (colors: any) => StyleSheet.create({
     ...FONTS.h3,
     fontSize: 14,
     color: colors.primary,
+  },
+  buyAgainBtn: {
+    fontSize: 12,
+    color: COLORS.secondary,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  shippingSection: {
+    marginBottom: 12,
+  },
+  shippingHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  shippingTitle: {
+    ...FONTS.h4,
+    fontSize: 12,
+    color: colors.text,
+  },
+  shippingText: {
+    ...FONTS.body,
+    fontSize: 11,
+    color: colors.gray,
+  },
+  editBtn: {
+    fontSize: 11,
+    color: COLORS.secondary,
+    fontWeight: '700',
+  },
+  cancelText: {
+    fontSize: 12,
+    color: COLORS.error,
+    fontWeight: '700',
   },
   emptyContainer: {
     alignItems: 'center',
@@ -275,7 +385,63 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   shopBtnText: {
     ...FONTS.h3,
-    color: colors.isDarkMode ? '#121212' : '#FFFFFF',
+    color: COLORS.white,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    ...FONTS.h2,
+    fontSize: 18,
+    color: colors.text,
+  },
+  inputGroup: {
+    marginBottom: 15,
+  },
+  label: {
+    ...FONTS.body,
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 5,
+    color: colors.text,
+  },
+  input: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    height: 50,
+    borderWidth: 1,
+    borderColor: colors.lightGray,
+    color: colors.text,
+  },
+  updateBtn: {
+    backgroundColor: COLORS.primary,
+    height: 55,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  updateBtnText: {
+    ...FONTS.h3,
+    color: COLORS.white,
   }
 });
 

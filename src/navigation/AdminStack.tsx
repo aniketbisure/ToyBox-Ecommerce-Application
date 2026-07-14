@@ -6,6 +6,8 @@ import EditProductScreen from '../screens/EditProductScreen';
 import AdminOrdersScreen from '../screens/AdminOrdersScreen';
 import AdminCategoriesScreen from '../screens/AdminCategoriesScreen';
 import AdminBannersScreen from '../screens/AdminBannersScreen';
+import AdminReviewsScreen from '../screens/AdminReviewsScreen';
+import AdminAnalyticsScreen from '../screens/AdminAnalyticsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
 const Stack = createStackNavigator();
@@ -19,6 +21,8 @@ const AdminStack = () => {
       <Stack.Screen name="AdminOrders" component={AdminOrdersScreen} />
       <Stack.Screen name="AdminBanners" component={AdminBannersScreen} />
       <Stack.Screen name="AdminCategories" component={AdminCategoriesScreen} />
+      <Stack.Screen name="AdminReviews" component={AdminReviewsScreen} />
+      <Stack.Screen name="AdminAnalytics" component={AdminAnalyticsScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
     </Stack.Navigator>
   );

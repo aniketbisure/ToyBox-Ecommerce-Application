@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert, Dimensions } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '../redux/slices/authSlice';
 import { RootState, AppDispatch } from '../redux/store';
 import { COLORS, FONTS, SHADOWS } from '../constants/theme';
-import { moderateScale } from '../utils/responsive';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList, ProfileStackNavigationProp } from '../types/navigation';
@@ -12,8 +11,9 @@ import { showToast } from '../utils/toastService';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import api from '../api/apiClient';
-
 import { useTheme } from '../hooks/useTheme';
+
+const { width } = Dimensions.get('window');
 
 const ProfileScreen = () => {
   const insets = useSafeAreaInsets();
@@ -21,12 +21,8 @@ const ProfileScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const profileNav = navigation as unknown as ProfileStackNavigationProp;
   const { colors, isDarkMode } = useTheme();
-  const user = useSelector((state: RootState) => state.auth.user);
+  const { user = null } = useSelector((state: RootState) => state.auth) || {};
   const [orderCount, setOrderCount] = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
-  const [reviewCount, setReviewCount] = useState(0);
-
-  const wishlistItems = useSelector((state: RootState) => state.wishlist?.items ?? []);
 
   const styles = useMemo(() => createStyles(colors, insets), [colors, insets]);
 
@@ -34,42 +30,40 @@ const ProfileScreen = () => {
     React.useCallback(() => {
       const fetchStats = async () => {
         try {
-          const [ordersRes, reviewsRes] = await Promise.all([
-            api.get('/orders/myorders'),
-            api.get('/products/myreviews')
-          ]);
-          setOrderCount(ordersRes.data.length);
-          setReviewCount(reviewsRes.data.length);
+          const { data } = await api.get('/orders/myorders');
+          setOrderCount(data.length);
         } catch (e) {
-          console.log('Error fetching profile stats');
+          console.log('Error fetching orders');
         }
       };
-
       fetchStats();
-      setWishlistCount(wishlistItems.length);
-      return () => {};
-    }, [wishlistItems.length])
+    }, [])
   );
+
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to sign out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Logout', style: 'destructive', onPress: () => (dispatch as AppDispatch)(logoutUser()) }
+    ]);
+  };
 
   const menuOptions = [
     { name: 'My Orders', icon: 'package-variant-closed', color: '#FFB8B8', screen: 'MyOrders' },
     { name: 'Shipping Address', icon: 'map-marker-outline', color: '#B8E1FF', screen: 'Address' },
     { name: 'Payment Methods', icon: 'credit-card-outline', color: '#D6FFB8', screen: 'Payments' },
+    { name: 'My Wishlist', icon: 'heart-outline', color: '#FFB8D6', screen: 'Wishlist' },
     { name: 'My Reviews', icon: 'star-outline', color: '#FFF3B8', screen: 'Reviews' },
     { name: 'Settings', icon: 'cog-outline', color: '#E1B8FF', screen: 'Settings' },
+    { name: 'Help & Support', icon: 'help-circle-outline', color: '#B8FFEB', screen: 'Support' },
   ];
-
-  if (user?.role === 'admin') {
-    menuOptions.unshift({ name: 'Admin Dashboard', icon: 'view-dashboard-outline', color: colors.primary, screen: 'AdminDashboard' });
-  }
 
   const renderOption = (option: any, index: number) => (
     <TouchableOpacity
-      key={index}
-      style={styles.optionItem}
+      key={option.name + index}
+      style={styles.listItem}
       onPress={() => {
-        if (option.screen === 'AdminDashboard') {
-          navigation.navigate('Admin', { screen: 'AdminDashboard' });
+        if (option.screen === 'Wishlist') {
+          navigation.navigate('Main', { screen: 'WishlistTab' });
         } else if (option.screen === 'MyOrders') {
           profileNav.navigate('MyOrders');
         } else if (option.screen === 'Address') {
@@ -80,297 +74,134 @@ const ProfileScreen = () => {
           profileNav.navigate('Reviews');
         } else if (option.screen === 'Settings') {
           profileNav.navigate('Settings');
-        } else {
-          showToast(`${option.name} feature is coming soon!`, 'info');
+        } else if (option.screen === 'Support') {
+          profileNav.navigate('Support');
         }
       }}
     >
-      <View style={[styles.iconContainer, { backgroundColor: option.color + '40' }]}>
-        <Icon name={option.icon} size={24} color={colors.text} />
+      <View style={[styles.iconContainer, { backgroundColor: option.color + '20' }]}>
+        <Icon name={option.icon} size={22} color={colors.text} />
       </View>
-      <Text style={[styles.optionName, { color: colors.text }]}>{option.name}</Text>
-      <Icon name="chevron-right" size={24} color={colors.gray} />
+      <Text style={styles.listItemText}>{option.name}</Text>
+      <Icon name="chevron-right" size={20} color="#888" />
     </TouchableOpacity>
   );
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to sign out of ToyBox?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: () => {
-            (dispatch as AppDispatch)(logoutUser());
-            showToast('Logged out successfully', 'info');
-          }
-        },
-      ]
-    );
-  };
-
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 120 }]}>
-
-        {/* Profile Header */}
+      <View style={{ paddingTop: insets.top, backgroundColor: colors.primary }}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>My Profile</Text>
-          <TouchableOpacity
-            style={styles.headerIconBtn}
-            onPress={() => profileNav.navigate('Settings')}
-          >
-            <Icon name="cog-outline" size={24} color={colors.text} />
+          <Text style={styles.headerGreeting}>Hello, {user?.name || 'User'}</Text>
+          <TouchableOpacity onPress={() => profileNav.navigate('Settings')}>
+            <Icon name="cog-outline" size={26} color={COLORS.white} />
           </TouchableOpacity>
         </View>
+      </View>
 
-        {/* Profile Card */}
-        <View style={styles.profileCard}>
-          <View style={styles.profileMainInfo}>
-            <View style={styles.avatarWrapper}>
-              <View style={[styles.defaultAvatar, { backgroundColor: colors.primary + '20' }]}>
-                <Icon name="account" size={45} color={colors.primary} />
-              </View>
-            </View>
-            <View style={styles.profileInfo}>
-              <Text style={styles.userName}>{user?.name || 'Aniket'}</Text>
-              <Text style={styles.userEmail}>{user?.email || 'aniket@example.com'}</Text>
-            </View>
-            <TouchableOpacity
-              style={[styles.editProfileBtn, { backgroundColor: colors.primary + '15' }]}
-              onPress={() => profileNav.navigate('EditProfile')}
-            >
-              <Text style={styles.editProfileText}>Edit</Text>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        {/* Top Grid for Quick Actions */}
+        <View style={styles.topGrid}>
+            <TouchableOpacity style={styles.gridItem} onPress={() => profileNav.navigate('MyOrders')}>
+              <Text style={styles.gridItemText}>Your Orders</Text>
             </TouchableOpacity>
-          </View>
-
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.primary }]}>{orderCount}</Text>
-              <Text style={styles.statLabel}>Orders</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.secondary }]}>{wishlistCount}</Text>
-              <Text style={styles.statLabel}>Wishlist</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.accent }]}>{reviewCount}</Text>
-              <Text style={styles.statLabel}>Reviews</Text>
-            </View>
-          </View>
+            <TouchableOpacity style={styles.gridItem} onPress={() => profileNav.navigate('MyOrders')}>
+              <Text style={styles.gridItemText}>Buy Again</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.gridItem} onPress={() => profileNav.navigate('EditProfile')}>
+              <Text style={styles.gridItemText}>Your Account</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.gridItem} onPress={() => navigation.navigate('Main', { screen: 'WishlistTab' })}>
+              <Text style={styles.gridItemText}>Your Wish List</Text>
+            </TouchableOpacity>
         </View>
 
-        {/* Menu Section */}
-        <View style={styles.menuSection}>
-          <Text style={styles.sectionTitle}>General</Text>
-          <View style={styles.menuContainer}>
-            {menuOptions.slice(0, 3).map(renderOption)}
-          </View>
+        {/* Account Settings Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitleLarge}>Account Settings</Text>
+          {menuOptions.map(renderOption)}
         </View>
 
-        <View style={styles.menuSection}>
-          <Text style={styles.sectionTitle}>Others</Text>
-          <View style={styles.menuContainer}>
-            {menuOptions.slice(3).map(renderOption)}
-          </View>
-        </View>
+        {user?.role === 'admin' && (
+          <TouchableOpacity
+            style={[styles.listItem, { marginTop: 10, backgroundColor: colors.primary + '10' }]}
+            onPress={() => navigation.navigate('Admin', { screen: 'AdminDashboard' })}
+          >
+            <View style={[styles.iconContainer, { backgroundColor: colors.primary + '20' }]}>
+              <Icon name="view-dashboard-outline" size={22} color={colors.primary} />
+            </View>
+            <Text style={[styles.listItemText, { color: colors.primary, fontWeight: '700' }]}>Admin Dashboard</Text>
+            <Icon name="chevron-right" size={20} color={colors.primary} />
+          </TouchableOpacity>
+        )}
 
-        <TouchableOpacity
-          style={styles.logoutBtn}
-          onPress={handleLogout}
-        >
-          <Icon name="logout-variant" size={22} color={colors.error} />
-          <Text style={styles.logoutText}>Logout from Account</Text>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+          <Text style={styles.logoutBtnText}>Sign Out</Text>
         </TouchableOpacity>
 
-        <Text style={styles.versionText}>App Version 1.0.4 • Build 86</Text>
+        <Text style={styles.versionText}>ToyBox App v1.0.4</Text>
       </ScrollView>
     </View>
   );
 };
 
 const createStyles = (colors: any, insets: any) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    paddingTop: insets.top,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-  },
+  container: { flex: 1, backgroundColor: '#FFF' },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
   },
-  headerTitle: {
-    ...FONTS.h1,
-    fontSize: 26,
-    color: colors.text,
-  },
-  headerIconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 15,
-    backgroundColor: colors.card,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...SHADOWS.light,
-  },
-  profileCard: {
-    borderRadius: 25,
-    padding: 20,
-    backgroundColor: colors.card,
-    ...SHADOWS.medium,
-    marginBottom: 30,
-  },
-  profileMainInfo: {
+  headerGreeting: { fontSize: 22, fontWeight: '400', color: COLORS.white },
+  scrollContent: { paddingBottom: 50 },
+  topGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatarWrapper: {
-    position: 'relative',
-  },
-  defaultAvatar: {
-    width: 75,
-    height: 75,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 75,
-    height: 75,
-    borderRadius: 25,
-  },
-  editAvatarBtn: {
-    position: 'absolute',
-    bottom: -5,
-    right: -5,
-    backgroundColor: colors.primary,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: colors.white,
-  },
-  profileInfo: {
-    flex: 1,
-    marginLeft: 15,
-  },
-  userName: {
-    ...FONTS.h2,
-    fontSize: 20,
-    marginBottom: 2,
-    color: colors.text,
-  },
-  userEmail: {
-    ...FONTS.caption,
-    color: colors.gray,
-  },
-  editProfileBtn: {
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-  editProfileText: {
-    ...FONTS.body,
-    color: colors.primary,
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    marginTop: 20,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    justifyContent: 'space-around',
-  },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statValue: {
-    ...FONTS.h2,
-    fontSize: 20,
-  },
-  statLabel: {
-    ...FONTS.caption,
-    color: colors.gray,
-    marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: '70%',
-    alignSelf: 'center',
-    backgroundColor: colors.border,
-  },
-  menuSection: {
-    marginBottom: 25,
-  },
-  sectionTitle: {
-    ...FONTS.h3,
-    marginBottom: 15,
-    fontSize: 15,
-    marginLeft: 5,
-    color: colors.text,
-  },
-  menuContainer: {
-    borderRadius: 20,
-    backgroundColor: colors.card,
-    ...SHADOWS.light,
-    overflow: 'hidden',
-  },
-  optionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
     padding: 15,
+    justifyContent: 'space-between',
+  },
+  gridItem: {
+    width: (width - 45) / 2,
+    height: 48,
+    backgroundColor: '#F0F2F2',
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#D5D9D9',
+  },
+  gridItemText: { fontSize: 14, color: '#111', fontWeight: '400' },
+  section: { padding: 20, borderBottomWidth: 4, borderBottomColor: '#F0F2F2' },
+  sectionTitleLarge: { fontSize: 20, fontWeight: '700', color: '#111', marginBottom: 15 },
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
   },
   iconContainer: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
+    width: 38,
+    height: 38,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  optionName: {
-    flex: 1,
-    ...FONTS.body,
-    marginLeft: 15,
-    fontWeight: '600',
-  },
+  listItemText: { flex: 1, fontSize: 15, marginLeft: 15, color: '#111' },
   logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 20,
-    marginBottom: 20,
-    backgroundColor: colors.error + '10',
+    margin: 20,
+    height: 48,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.error + '30',
+    borderColor: '#D5D9D9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F0F2F2',
   },
-  logoutText: {
-    ...FONTS.h3,
-    color: colors.error,
-    marginLeft: 10,
-    fontSize: 15,
-  },
-  versionText: {
-    textAlign: 'center',
-    ...FONTS.caption,
-    color: colors.gray,
-    marginBottom: 20,
-  }
+  logoutBtnText: { fontSize: 15, color: '#111', fontWeight: '500' },
+  versionText: { textAlign: 'center', color: '#888', fontSize: 12, marginTop: 10 },
 });
 
 export default ProfileScreen;

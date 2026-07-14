@@ -1,96 +1,314 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
+import React, { useState, useMemo, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  FlatList,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import { COLORS, FONTS, SHADOWS } from '../constants/theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../hooks/useTheme';
-import { PaymentMethod } from '../types';
 import { showToast } from '../utils/toastService';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '../redux/store';
+import { getProfile } from '../redux/slices/authSlice';
+import apiClient from '../api/apiClient';
+
+interface Card {
+  id: string;
+  number: string;
+  holder: string;
+  expiry: string;
+  type: string;
+}
 
 const PaymentMethodsScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
 
-  const [methods, setMethods] = useState<PaymentMethod[]>([
-    { id: '1', name: 'Razorpay / UPI / Cards', icon: 'credit-card', last4: '8890' },
-    { id: '2', name: 'HDFC Bank Credit Card', icon: 'card-bulleted-outline', last4: '4242' }
-  ]);
+  const [cards, setCards] = useState<Card[]>(user?.paymentMethods || []);
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [newCard, setNewCard] = useState({
+    number: '',
+    holder: '',
+    expiry: '',
+    cvv: '',
+  });
 
-  const handleAddMethod = () => {
-    // Mock adding a new method
-    const newMethod: PaymentMethod = {
-      id: Date.now().toString(),
-      name: 'New Mock Card',
-      icon: 'credit-card-plus-outline',
-      last4: Math.floor(1000 + Math.random() * 9000).toString()
-    };
-    setMethods([...methods, newMethod]);
-    showToast('Payment method added successfully!', 'success');
+  useEffect(() => {
+    if (user?.paymentMethods) {
+      setCards(user.paymentMethods);
+    }
+  }, [user?.paymentMethods]);
+
+  const handleAddCard = async () => {
+    if (!newCard.number || !newCard.holder || !newCard.expiry || !newCard.cvv) {
+      showToast('Please fill all details', 'error');
+      return;
+    }
+
+    if (newCard.number.length < 16) {
+      showToast('Invalid card number', 'error');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const card: Card = {
+        id: Math.random().toString(36).substr(2, 9),
+        number: `**** **** **** ${newCard.number.slice(-4)}`,
+        holder: newCard.holder,
+        expiry: newCard.expiry,
+        type: newCard.number.startsWith('4') ? 'visa' : 'mastercard',
+      };
+
+      const updatedCards = [...cards, card];
+      await apiClient.put('/users/profile', { paymentMethods: updatedCards });
+      dispatch(getProfile());
+
+      setNewCard({ number: '', holder: '', expiry: '', cvv: '' });
+      setShowModal(false);
+      showToast('Card added successfully', 'success');
+    } catch (e) {
+      showToast('Failed to save card', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeMethod = (id: string) => {
-    setMethods(methods.filter(m => m.id !== id));
-    showToast('Payment method removed', 'info');
+  const deleteCard = (id: string) => {
+    Alert.alert('Remove Card', 'Are you sure you want to remove this card?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Remove',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const updatedCards = cards.filter((c) => c.id !== id);
+            await apiClient.put('/users/profile', { paymentMethods: updatedCards });
+            dispatch(getProfile());
+            showToast('Card removed', 'info');
+          } catch (e) {
+            showToast('Failed to remove card', 'error');
+          }
+        },
+      },
+    ]);
   };
+
+  const renderCard = ({ item }: { item: Card }) => (
+    <View style={[styles.cardItem, { backgroundColor: colors.card }]}>
+      <View style={styles.cardInfo}>
+        <View style={[styles.cardIcon, { backgroundColor: item.type === 'visa' ? '#1A1F71' : '#EB001B' }]}>
+          <Icon name={item.type === 'visa' ? 'visa' : 'mastercard'} size={24} color="#FFF" />
+        </View>
+        <View style={{ marginLeft: 15 }}>
+          <Text style={[styles.cardNumber, { color: colors.text }]}>{item.number}</Text>
+          <Text style={styles.cardHolder}>{item.holder.toUpperCase()}</Text>
+        </View>
+      </View>
+      <TouchableOpacity onPress={() => deleteCard(item.id)}>
+        <Icon name="trash-can-outline" size={22} color={COLORS.error} />
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Icon name="arrow-left" size={26} color={colors.text} />
+          <Icon name="arrow-left" size={28} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Payment Methods</Text>
-        <View style={{ width: 40 }} />
+        <TouchableOpacity onPress={() => setShowModal(true)} style={styles.backBtn}>
+          <Icon name="plus" size={26} color={colors.text} />
+        </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        {methods.length > 0 ? (
-          methods.map((item, index) => (
-            <View key={item.id || index} style={styles.card}>
-              <View style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
-                <Icon name={item.icon as any} size={28} color={colors.primary} />
+      <FlatList
+        data={cards}
+        keyExtractor={(item) => item.id}
+        renderItem={renderCard}
+        contentContainerStyle={{ padding: 20 }}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Icon name="credit-card-plus-outline" size={80} color={colors.lightGray} />
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>No Saved Cards</Text>
+            <Text style={styles.emptySubtitle}>
+              You haven't saved any payment methods yet. You can add them here for faster checkout.
+            </Text>
+
+            <TouchableOpacity style={styles.addBtn} onPress={() => setShowModal(true)}>
+              <Text style={styles.addBtnText}>+ Add New Card</Text>
+            </TouchableOpacity>
+          </View>
+        }
+        ListFooterComponent={
+          cards.length > 0 ? (
+            <View style={styles.infoSection}>
+              <Text style={[styles.infoTitle, { color: colors.text }]}>Secure Payments</Text>
+              <View style={styles.infoRow}>
+                <Icon name="shield-check" size={20} color={COLORS.success} />
+                <Text style={styles.infoText}>Your payment information is encrypted and secure.</Text>
               </View>
-              <View style={styles.info}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.last4}>Ending in •••• {item.last4}</Text>
-              </View>
-              <TouchableOpacity onPress={() => removeMethod(item.id)}>
-                <Icon name="trash-can-outline" size={22} color={colors.error} />
+            </View>
+          ) : null
+        }
+      />
+
+      <Modal visible={showModal} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={[styles.modalContent, { backgroundColor: colors.background }]}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Add New Card</Text>
+              <TouchableOpacity onPress={() => setShowModal(false)}>
+                <Icon name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
-          ))
-        ) : (
-          <View style={styles.emptyContainer}>
-            <Icon name="credit-card-off-outline" size={60} color={colors.gray} />
-            <Text style={styles.emptyText}>No payment methods saved yet</Text>
-          </View>
-        )}
 
-        <TouchableOpacity style={styles.addBtn} onPress={handleAddMethod}>
-          <Icon name="plus" size={24} color={colors.primary} />
-          <Text style={styles.addBtnText}>Add New Method</Text>
-        </TouchableOpacity>
-      </ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { color: colors.text }]}>Card Number</Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+                  placeholder="0000 0000 0000 0000"
+                  placeholderTextColor={colors.gray}
+                  keyboardType="numeric"
+                  maxLength={16}
+                  value={newCard.number}
+                  onChangeText={(t) => setNewCard({ ...newCard, number: t })}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={[styles.label, { color: colors.text }]}>Card Holder Name</Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+                  placeholder="John Doe"
+                  placeholderTextColor={colors.gray}
+                  autoCapitalize="characters"
+                  value={newCard.holder}
+                  onChangeText={(t) => setNewCard({ ...newCard, holder: t })}
+                />
+              </View>
+
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View style={[styles.inputGroup, { width: '48%' }]}>
+                  <Text style={[styles.label, { color: colors.text }]}>Expiry Date</Text>
+                  <TextInput
+                    style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+                    placeholder="MM/YY"
+                    placeholderTextColor={colors.gray}
+                    maxLength={5}
+                    value={newCard.expiry}
+                    onChangeText={(t) => setNewCard({ ...newCard, expiry: t })}
+                  />
+                </View>
+                <View style={[styles.inputGroup, { width: '48%' }]}>
+                  <Text style={[styles.label, { color: colors.text }]}>CVV</Text>
+                  <TextInput
+                    style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+                    placeholder="123"
+                    placeholderTextColor={colors.gray}
+                    keyboardType="numeric"
+                    maxLength={3}
+                    secureTextEntry
+                    value={newCard.cvv}
+                    onChangeText={(t) => setNewCard({ ...newCard, cvv: t })}
+                  />
+                </View>
+              </View>
+
+              <TouchableOpacity style={styles.saveBtn} onPress={handleAddCard} disabled={loading}>
+                {loading ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.saveBtnText}>Save Card</Text>}
+              </TouchableOpacity>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
     </View>
   );
 };
 
 const createStyles = (colors: any) => StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 15 },
-  backBtn: { padding: 5 },
-  headerTitle: { ...FONTS.h2, fontSize: 20, color: colors.text },
-  content: { padding: 20 },
-  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, padding: 15, borderRadius: 20, marginBottom: 15, ...SHADOWS.medium },
-  iconContainer: { width: 50, height: 50, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
-  info: { flex: 1, marginLeft: 15 },
-  name: { ...FONTS.h3, fontSize: 16, color: colors.text },
-  last4: { ...FONTS.caption, color: colors.gray },
-  emptyContainer: { alignItems: 'center', paddingVertical: 50 },
-  emptyText: { ...FONTS.body, color: colors.gray, marginTop: 15 },
-  addBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 20, borderStyle: 'dashed', borderWidth: 2, borderColor: colors.primary + '80', borderRadius: 20, marginTop: 10 },
-  addBtnText: { ...FONTS.h3, color: colors.primary, marginLeft: 10 }
+  container: { flex: 1 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    paddingBottom: 15,
+    backgroundColor: colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.lightGray,
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    ...FONTS.h2,
+    fontSize: 20,
+    color: colors.text,
+  },
+  cardItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 15,
+    borderRadius: 15,
+    marginBottom: 15,
+    ...SHADOWS.light,
+  },
+  cardInfo: { flexDirection: 'row', alignItems: 'center' },
+  cardIcon: { width: 40, height: 25, borderRadius: 4, justifyContent: 'center', alignItems: 'center' },
+  cardNumber: { fontSize: 16, fontWeight: '700' },
+  cardHolder: { fontSize: 12, color: COLORS.gray, marginTop: 2 },
+  emptyContainer: { alignItems: 'center', marginTop: 40, padding: 20 },
+  emptyTitle: { ...FONTS.h2, marginTop: 20 },
+  emptySubtitle: { ...FONTS.body, textAlign: 'center', color: COLORS.gray, marginTop: 10, lineHeight: 22 },
+  addBtn: { backgroundColor: COLORS.primary, paddingHorizontal: 30, paddingVertical: 15, borderRadius: 15, marginTop: 30 },
+  addBtnText: { color: COLORS.white, fontWeight: '700' },
+  infoSection: { marginTop: 20, borderTopWidth: 1, borderTopColor: '#EEE', paddingTop: 20 },
+  infoTitle: { ...FONTS.h3, marginBottom: 10 },
+  infoRow: { flexDirection: 'row', alignItems: 'center' },
+  infoText: { marginLeft: 10, ...FONTS.body, fontSize: 13, color: COLORS.gray },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalContent: { borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 20, maxHeight: '80%' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  modalTitle: { ...FONTS.h2, fontSize: 18 },
+  inputGroup: { marginBottom: 20 },
+  label: { ...FONTS.body, fontWeight: '700', marginBottom: 8, fontSize: 14 },
+  input: { borderRadius: 12, paddingHorizontal: 15, height: 50, ...FONTS.body, borderWidth: 1, borderColor: '#DDD' },
+  saveBtn: {
+    backgroundColor: COLORS.primary,
+    height: 55,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+    ...SHADOWS.medium,
+  },
+  saveBtnText: { ...FONTS.h3, color: COLORS.white },
 });
 
 export default PaymentMethodsScreen;

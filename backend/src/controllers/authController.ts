@@ -18,8 +18,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       res.status(400).json({ message: 'User already exists' });
       return;
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hashedPassword });
+    const user = await User.create({ name, email, password });
 
     const { accessToken, refreshToken } = generateTokens(user._id.toString(), user.role, user.name);
     user.refreshToken = refreshToken;
@@ -38,9 +37,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('+password');
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user || !(await user.matchPassword(password))) {
       res.status(401).json({ message: 'Invalid credentials' });
       return;
     }

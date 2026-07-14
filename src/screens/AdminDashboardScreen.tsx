@@ -15,7 +15,7 @@ const AdminDashboardScreen = ({ navigation }: any) => {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors, insets), [colors, insets]);
   const dispatch = useDispatch<AppDispatch>();
-  const { products } = useSelector((state: RootState) => state.products);
+  const { products = [] } = useSelector((state: RootState) => state.products) || {};
   const [orderCount, setOrderCount] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [userCount, setUserCount] = useState(0);
@@ -54,6 +54,8 @@ const AdminDashboardScreen = ({ navigation }: any) => {
   const adminActions = [
     { name: 'Manage Products', icon: 'plus-box-multiple', description: 'Add, edit or remove products', screen: 'AdminProducts' },
     { name: 'Banner Control', icon: 'image-multiple', description: 'Change home screen banners', screen: 'AdminBanners' },
+    { name: 'Review Moderation', icon: 'comment-check-outline', description: 'Manage and delete user reviews', screen: 'AdminReviews' },
+    { name: 'Analytics', icon: 'chart-arc', description: 'View popular trends and intent', screen: 'AdminAnalytics' },
     { name: 'Categories', icon: 'shape-outline', description: 'Organize product categories', screen: 'AdminCategories' },
     { name: 'Order Insights', icon: 'chart-box-outline', description: 'View and process user orders', screen: 'AdminOrders' },
   ];

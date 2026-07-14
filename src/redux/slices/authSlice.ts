@@ -1,19 +1,15 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import apiClient from '../../api/apiClient';
 import { saveTokens, clearTokens } from '../../utils/securityService';
+import { Address } from '../../types';
 
 interface User {
   id: string;
   email: string;
   name: string;
   role: 'user' | 'admin';
-  address?: {
-    street: string;
-    city: string;
-    state: string;
-    zip: string;
-    country: string;
-  };
+  addresses?: Address[];
+  phoneNumbers?: string[];
 }
 
 interface AuthState {
@@ -116,9 +112,14 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
-    updateUserAddress: (state, action: PayloadAction<User['address']>) => {
+    updateUserAddress: (state, action: PayloadAction<User['addresses']>) => {
       if (state.user) {
-        state.user.address = action.payload;
+        state.user.addresses = action.payload;
+      }
+    },
+    updateUserPhoneNumbers: (state, action: PayloadAction<string[]>) => {
+      if (state.user) {
+        state.user.phoneNumbers = action.payload;
       }
     }
   },

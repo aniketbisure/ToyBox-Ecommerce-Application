@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import apiClient from '../../api/apiClient';
+import { getProfile } from './authSlice';
 
 interface Product {
   id: string;
@@ -97,6 +98,20 @@ export const deleteProduct = createAsyncThunk(
   }
 );
 
+export const syncRecentlyViewed = createAsyncThunk(
+  'products/syncHistory',
+  async (history: Product[], { rejectWithValue }) => {
+    try {
+      const response = await apiClient.put('/users/history', {
+        recentlyViewed: history.map(item => item.id || (item as any)._id)
+      });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to sync history');
+    }
+  }
+);
+
 const productSlice = createSlice({
   name: 'products',
   initialState,
@@ -125,6 +140,31 @@ const productSlice = createSlice({
       if (state.recentlyViewed.length > 10) {
         state.recentlyViewed.pop();
       }
+    },
+    // Real-time update actions
+    onProductUpdated: (state, action: PayloadAction<Product>) => {
+      const updatedProduct = { ...action.payload, id: action.payload.id || (action.payload as any)._id };
+      const index = state.products.findIndex(p => p.id === updatedProduct.id);
+      if (index !== -1) {
+        state.products[index] = updatedProduct;
+      }
+      const filteredIndex = state.filteredProducts.findIndex(p => p.id === updatedProduct.id);
+      if (filteredIndex !== -1) {
+        state.filteredProducts[filteredIndex] = updatedProduct;
+      }
+    },
+    onProductAdded: (state, action: PayloadAction<Product>) => {
+      const newProduct = { ...action.payload, id: action.payload.id || (action.payload as any)._id };
+      // Avoid duplicates
+      if (!state.products.find(p => p.id === newProduct.id)) {
+        state.products.unshift(newProduct);
+        state.filteredProducts.unshift(newProduct);
+      }
+    },
+    onProductDeleted: (state, action: PayloadAction<string>) => {
+      const id = action.payload;
+      state.products = state.products.filter(p => p.id !== id);
+      state.filteredProducts = state.filteredProducts.filter(p => p.id !== id);
     }
   },
   extraReducers: (builder) => {
@@ -143,8 +183,15 @@ const productSlice = createSlice({
             }))
           : [];
 
-        state.products = mappedProducts;
-        state.filteredProducts = mappedProducts;
+        // Sort products by category/subCategory
+        const sortedProducts = [...mappedProducts].sort((a, b) => {
+          const catA = (a.category || a.subCategory || '').toLowerCase();
+          const catB = (b.category || b.subCategory || '').toLowerCase();
+          return catA.localeCompare(catB);
+        });
+
+        state.products = sortedProducts;
+        state.filteredProducts = sortedProducts;
         state.page = action.payload.page || 1;
         state.pages = action.payload.pages || 1;
         state.total = action.payload.total || mappedProducts.length;
@@ -172,9 +219,29 @@ const productSlice = createSlice({
       .addCase(deleteProduct.fulfilled, (state, action) => {
         state.products = state.products.filter(p => p.id !== action.payload);
         state.filteredProducts = state.filteredProducts.filter(p => p.id !== action.payload);
+      })
+      .addCase(syncRecentlyViewed.fulfilled, (state, action) => {
+        state.recentlyViewed = action.payload.map((p: any) => ({
+          ...p,
+          id: p.id || p._id
+        }));
+      })
+      .addCase(getProfile.fulfilled, (state, action) => {
+        if (action.payload.recentlyViewed) {
+          state.recentlyViewed = action.payload.recentlyViewed.map((p: any) => ({
+            ...p,
+            id: p.id || p._id
+          }));
+        }
       });
   },
 });
 
-export const { setFilteredProducts, addToRecentlyViewed } = productSlice.actions;
+export const {
+  setFilteredProducts,
+  addToRecentlyViewed,
+  onProductUpdated,
+  onProductAdded,
+  onProductDeleted
+} = productSlice.actions;
 export default productSlice.reducer;

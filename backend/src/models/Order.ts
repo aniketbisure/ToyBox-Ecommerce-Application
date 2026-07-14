@@ -17,6 +17,7 @@ export interface IOrder extends Document {
     postalCode: string;
     country: string;
   };
+  contactNumber: string;
   paymentMethod: string;
   idempotencyKey?: string; // Prevent duplicate order creation
   status: 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
@@ -53,6 +54,7 @@ const OrderSchema: Schema = new Schema({
     postalCode: { type: String, required: true },
     country: { type: String, required: true },
   },
+  contactNumber: { type: String, required: true },
   paymentMethod: { type: String, required: true },
   idempotencyKey: { type: String, index: true },
   status: {

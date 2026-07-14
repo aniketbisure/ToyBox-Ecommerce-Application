@@ -1,14 +1,19 @@
+export interface Address {
+  id: string;
+  label?: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+}
+
 export interface User {
   id: string;
   name: string;
   email: string;
-  address?: {
-    street: string;
-    city: string;
-    state: string;
-    zip: string;
-    country: string;
-  };
+  phoneNumbers?: string[];
+  addresses?: Address[];
   role: 'user' | 'admin';
 }
 

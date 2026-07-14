@@ -3,24 +3,27 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../hooks/useTheme';
-
-import { moderateScale, scale, verticalScale } from '../utils/responsive';
+import { moderateScale } from '../utils/responsive';
 
 interface ProductCardProps {
   product: {
     id: string;
+    _id?: string;
     name: string;
     price: number;
+    listPrice?: number;
     image: string;
-    category: string;
+    category?: string;
     rating?: number;
+    numReviews?: number;
+    isPlus?: boolean;
+    deliveryDate?: string;
   };
   onPress: () => void;
   onAddToCart?: () => void;
   isWishlisted?: boolean;
   onWishlistPress?: () => void;
 }
-
 
 const ProductCard: React.FC<ProductCardProps> = React.memo(({
   product,
@@ -32,43 +35,77 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
+  const discount = product.listPrice && product.listPrice > product.price
+    ? Math.round(((product.listPrice - product.price) / product.listPrice) * 100)
+    : 0;
+
   return (
     <TouchableOpacity
       style={styles.container}
-      activeOpacity={0.8}
+      activeOpacity={0.9}
       onPress={onPress}
     >
-      <View style={styles.imageContainer}>
-        <Image source={{ uri: product.image }} style={styles.image} resizeMode="cover" />
+      <View style={styles.imageWrapper}>
+        <Image source={{ uri: product.image }} style={styles.image} resizeMode="contain" />
         <TouchableOpacity
           style={styles.wishlistBtn}
-          onPress={onWishlistPress}
+          onPress={(e) => {
+            e.stopPropagation();
+            onWishlistPress && onWishlistPress();
+          }}
         >
           <Icon
             name={isWishlisted ? "heart" : "heart-outline"}
             size={20}
-            color={isWishlisted ? colors.primary : colors.gray}
+            color={isWishlisted ? COLORS.primary : '#888'}
           />
         </TouchableOpacity>
-        {product.rating && (
-          <View style={styles.ratingBadge}>
-            <Icon name="star" size={12} color={colors.accent} />
-            <Text style={styles.ratingText}>{product.rating}</Text>
+        {discount > 0 && (
+          <View style={styles.discountBadge}>
+            <Text style={styles.discountText}>{discount}% OFF</Text>
           </View>
         )}
       </View>
+
       <View style={styles.info}>
-        <Text style={styles.category}>{product.category}</Text>
-        <Text style={styles.name} numberOfLines={1}>{product.name}</Text>
-        <View style={styles.footer}>
-          <Text style={styles.price}>₹{product.price.toFixed(2)}</Text>
-          <TouchableOpacity
-            style={styles.addBtn}
-            onPress={onAddToCart}
-          >
-            <Icon name="plus" size={18} color={colors.white} />
-          </TouchableOpacity>
+        <Text style={styles.name} numberOfLines={2}>{product.name}</Text>
+
+        <View style={styles.ratingRow}>
+          <View style={styles.stars}>
+            {[1, 2, 3, 4, 5].map((s) => (
+              <Icon
+                key={s}
+                name={s <= (product.rating || 0) ? "star" : "star-outline"}
+                size={14}
+                color={s <= (product.rating || 0) ? "#FFA41C" : "#CCC"}
+              />
+            ))}
+          </View>
+          <Text style={styles.reviewCount}>{product.numReviews || 0}</Text>
         </View>
+
+        <View style={styles.priceRow}>
+          <Text style={styles.currency}>₹</Text>
+          <Text style={styles.price}>{product.price.toLocaleString()}</Text>
+          {product.listPrice && product.listPrice > product.price && (
+            <Text style={styles.mrp}>M.R.P: ₹{product.listPrice.toLocaleString()}</Text>
+          )}
+        </View>
+
+        <View style={styles.deliveryRow}>
+          <Icon name="truck-delivery-outline" size={14} color="#007600" />
+          <Text style={styles.deliveryText}>FREE delivery <Text style={{fontWeight: '700'}}>Tomorrow</Text></Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.addBtn}
+          onPress={(e) => {
+            e.stopPropagation();
+            onAddToCart && onAddToCart();
+          }}
+        >
+          <Text style={styles.addBtnText}>Add to cart</Text>
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
@@ -77,84 +114,118 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({
 const createStyles = (colors: any) => StyleSheet.create({
   container: {
     width: '48%',
-    backgroundColor: colors.card,
-    borderRadius: SIZES.radius,
-    marginBottom: moderateScale(16),
-    ...SHADOWS.medium,
-  },
-  imageContainer: {
-    width: '100%',
-    height: verticalScale(160),
-    borderTopLeftRadius: SIZES.radius,
-    borderTopRightRadius: SIZES.radius,
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
     overflow: 'hidden',
-    position: 'relative',
-    backgroundColor: colors.lightGray,
+    ...SHADOWS.light,
+  },
+  imageWrapper: {
+    width: '100%',
+    aspectRatio: 1,
+    backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
   },
   image: {
-    width: '100%',
-    height: '100%',
+    width: '85%',
+    height: '85%',
   },
   wishlistBtn: {
     position: 'absolute',
-    top: moderateScale(10),
-    right: moderateScale(10),
-    backgroundColor: colors.card,
-    width: moderateScale(32),
-    height: moderateScale(32),
-    borderRadius: moderateScale(16),
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     ...SHADOWS.light,
   },
-  ratingBadge: {
+  discountBadge: {
     position: 'absolute',
-    bottom: moderateScale(10),
-    left: moderateScale(10),
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    paddingHorizontal: moderateScale(8),
-    paddingVertical: moderateScale(4),
-    borderRadius: moderateScale(10),
-    flexDirection: 'row',
-    alignItems: 'center',
+    top: 10,
+    left: 10,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
   },
-  ratingText: {
-    ...FONTS.caption,
-    marginLeft: moderateScale(4),
-    fontWeight: '700',
-    color: colors.text,
+  discountText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: '800',
   },
   info: {
-    padding: moderateScale(12),
-  },
-  category: {
-    ...FONTS.caption,
-    color: colors.gray,
-    marginBottom: moderateScale(2),
+    padding: 12,
   },
   name: {
-    ...FONTS.h3,
-    fontSize: moderateScale(15),
-    marginBottom: moderateScale(8),
-    color: colors.text,
+    fontSize: 14,
+    height: 38,
+    lineHeight: 18,
+    color: '#333',
+    fontWeight: '600',
   },
-  footer: {
+  ratingRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    marginVertical: 6,
+  },
+  stars: {
+    flexDirection: 'row',
+  },
+  reviewCount: {
+    fontSize: 12,
+    color: '#888',
+    marginLeft: 4,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginTop: 2,
+  },
+  currency: {
+    fontSize: 12,
+    color: COLORS.primary,
+    fontWeight: '700',
   },
   price: {
-    ...FONTS.h3,
-    color: colors.primary,
-    fontSize: moderateScale(16),
+    fontSize: 18,
+    color: COLORS.primary,
+    fontWeight: '800',
+    marginLeft: 1,
+  },
+  mrp: {
+    fontSize: 11,
+    textDecorationLine: 'line-through',
+    color: '#BBB',
+    marginLeft: 6,
+  },
+  deliveryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  deliveryText: {
+    fontSize: 11,
+    color: '#888',
+    marginLeft: 4,
   },
   addBtn: {
-    backgroundColor: colors.secondary,
-    width: moderateScale(28),
-    height: moderateScale(28),
-    borderRadius: moderateScale(8),
-    justifyContent: 'center',
+    marginTop: 12,
+    backgroundColor: '#333',
+    paddingVertical: 10,
+    borderRadius: 12,
     alignItems: 'center',
+  },
+  addBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFF',
   },
 });
 

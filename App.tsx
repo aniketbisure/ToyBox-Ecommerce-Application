@@ -9,9 +9,13 @@ import { COLORS } from './src/constants/theme';
 import Toast from './src/components/Toast';
 import { toastRef } from './src/utils/toastService';
 import { requestUserPermission, notificationListener } from './src/utils/notificationService';
+import { useRealTimeUpdates } from './src/hooks/useRealTimeUpdates';
 
 const MainApp = () => {
-  const darkMode = useSelector((state: RootState) => state.config.settings.darkMode);
+  const darkMode = useSelector((state: RootState) => state.config?.settings?.darkMode ?? false);
+
+  // Initialize Real-Time Admin Sync
+  useRealTimeUpdates();
 
   useEffect(() => {
     requestUserPermission();
