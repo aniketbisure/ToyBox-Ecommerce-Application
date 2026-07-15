@@ -14,7 +14,7 @@ import {
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../redux/store';
 import { clearCart, syncCart } from '../redux/slices/cartSlice';
-import { setSelectedPhoneNumber } from '../redux/slices/authSlice';
+import { setSelectedPhoneNumber, getProfile } from '../redux/slices/authSlice';
 import { COLORS, FONTS, SHADOWS, ThemeColors } from '../constants/theme';
 import { showToast } from '../utils/toastService';
 import apiClient from '../api/apiClient';
@@ -154,6 +154,7 @@ const CheckoutScreen = ({ navigation }: any) => {
     const updatedPhones = [...(user?.phoneNumbers || []), newPhone];
     try {
       await apiClient.put('/users/profile', { phoneNumbers: updatedPhones });
+      await dispatch(getProfile() as any);
       setSelectedPhone(newPhone);
       setShowPhoneModal(false);
       setNewPhone('');

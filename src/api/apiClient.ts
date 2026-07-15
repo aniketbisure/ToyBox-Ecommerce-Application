@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { showToast } from '../utils/toastService';
 
 // Priority order for base URL:
 // 1. Deployed production URL (set BACKEND_URL in your react-native-config .env)
@@ -16,7 +17,7 @@ const baseURL = getBaseURL();
 
 const apiClient = axios.create({
   baseURL,
-  timeout: 30000,
+  timeout: 15000, // Reduced from 30s for better fail-fast experience
   headers: {
     'Content-Type': 'application/json',
   },
@@ -40,11 +41,18 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor for Token Refresh
+// Response Interceptor for Token Refresh and Global Error Handling
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    // Handle Network Errors
+    if (!error.response) {
+      showToast('Network error: Please check your internet connection', 'error');
+      return Promise.reject(error);
+    }
+
     // Dynamic import to avoid circular dependency
     const { store } = await import('../redux/store');
     const state = store.getState();
@@ -67,6 +75,14 @@ apiClient.interceptors.response.use(
         store.dispatch(logoutUser() as any);
       }
     }
+
+    // Handle other global errors
+    if (error.response?.status === 500) {
+      showToast('Server error: Something went wrong on our end', 'error');
+    } else if (error.response?.status === 403) {
+      showToast('Forbidden: You do not have permission for this action', 'error');
+    }
+
     return Promise.reject(error);
   }
 );

@@ -28,6 +28,7 @@ import Logo from '../components/common/Logo';
 import { addToCart } from '../redux/slices/cartSlice';
 import { toggleWishlist } from '../redux/slices/wishlistSlice';
 import { useTheme, useThemedStyles } from '../hooks/useTheme';
+import ProductSkeleton from '../components/skeletons/ProductSkeleton';
 
 const { width } = Dimensions.get('window');
 
@@ -38,11 +39,12 @@ const HomeScreen = ({ navigation, route }: any) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const user = useSelector((state: RootState) => state.auth?.user) as User | null;
-  const { products = [], recentlyViewed = [] } = useSelector((state: RootState) => state.products) || {};
-  const { banners = [] } = useSelector((state: RootState) => state.config) || {};
+  const { products = [], recentlyViewed = [], loading: productsLoading } = useSelector((state: RootState) => state.products) || {};
+  const { banners = [], loading: configLoading } = useSelector((state: RootState) => state.config) || {};
   const cartItems = useSelector((state: RootState) => state.cart?.items ?? []);
   const wishlistItems = useSelector((state: RootState) => state.wishlist?.items ?? []);
 
+  const isLoading = (productsLoading || configLoading) && products.length === 0;
   const [refreshing, setRefreshing] = useState(false);
   const [activeCategory] = useState<string>('All');
   const [displayProducts, setDisplayProducts] = useState<Product[]>(products);
@@ -210,9 +212,9 @@ const HomeScreen = ({ navigation, route }: any) => {
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }
         )}
-        data={displayProducts}
-        keyExtractor={(item, index) => item.id || index.toString()}
-        renderItem={renderProductItem}
+        data={isLoading ? [1, 2, 3, 4, 5, 6] : displayProducts}
+        keyExtractor={(item, index) => isLoading ? `skeleton-${index}` : (item.id || index.toString())}
+        renderItem={isLoading ? () => <ProductSkeleton /> : renderProductItem}
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={[styles.listContent, { paddingTop: insets.top + 110 }]}
@@ -221,10 +223,12 @@ const HomeScreen = ({ navigation, route }: any) => {
         ListHeaderComponent={
           <>
             {renderCategoryIcons()}
-            <BannerCarousel banners={banners as Banner[]} />
-            {renderRecentlyViewed()}
+            {!isLoading && <BannerCarousel banners={banners as Banner[]} />}
+            {!isLoading && renderRecentlyViewed()}
             <View style={styles.sectionHeaderWide}>
-              <Text style={styles.sectionTitle}>Recommended for you</Text>
+              <Text style={styles.sectionTitle}>
+                {isLoading ? 'Finding the best toys...' : 'Recommended for you'}
+              </Text>
             </View>
           </>
         }

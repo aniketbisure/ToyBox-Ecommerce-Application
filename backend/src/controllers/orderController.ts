@@ -108,7 +108,12 @@ export const verifyPayment = async (req: AuthRequest, res: Response) => {
     try {
       const order = await Order.findOne({ razorpayOrderId: razorpay_order_id }).session(session);
 
-      if (order && !order.isPaid) {
+      if (order && order.isPaid) {
+        await session.commitTransaction();
+        return res.json({ status: 'success', message: 'Payment already verified' });
+      }
+
+      if (order) {
         order.isPaid = true;
         order.paidAt = new Date();
         order.status = 'PAID';

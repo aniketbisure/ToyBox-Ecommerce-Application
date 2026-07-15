@@ -4,6 +4,7 @@ import { COLORS, FONTS, SIZES, SHADOWS, ThemeColors } from '../constants/theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme, useThemedStyles } from '../hooks/useTheme';
 import { moderateScale } from '../utils/responsive';
+import { getOptimizedImageUrl } from '../utils/imageUtils';
 
 interface ProductCardProps {
   product: {
@@ -46,7 +47,11 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({
       onPress={onPress}
     >
       <View style={styles.imageWrapper}>
-        <Image source={{ uri: product.image }} style={styles.image} resizeMode="contain" />
+        <Image
+          source={{ uri: getOptimizedImageUrl(product.image, 300, 300) }}
+          style={styles.image}
+          resizeMode="contain"
+        />
         <TouchableOpacity
           style={styles.wishlistBtn}
           onPress={(e) => {

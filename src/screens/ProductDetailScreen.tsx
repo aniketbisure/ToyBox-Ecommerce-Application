@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Share, FlatList, StatusBar } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { addToCart, syncCart } from '../redux/slices/cartSlice';
+import { addToCart, syncCart, setCart } from '../redux/slices/cartSlice';
 import { toggleWishlist, syncWishlist, setWishlist } from '../redux/slices/wishlistSlice';
 import { addToRecentlyViewed, syncRecentlyViewed } from '../redux/slices/productSlice';
 import { RootState, AppDispatch } from '../redux/store';
@@ -12,6 +12,7 @@ import CustomButton from '../components/CustomButton';
 import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
 import api from '../api/apiClient';
 import { useTheme, useThemedStyles } from '../hooks/useTheme';
+import { getOptimizedImageUrl } from '../utils/imageUtils';
 
 const { width } = Dimensions.get('window');
 
@@ -80,16 +81,29 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
+    const previousCart = [...cartItems];
     dispatch(addToCart({ ...product, quantity }));
+
     if (isAuthenticated) {
-      const existingItem = cartItems.find(item => item.id === product.id);
-      let nextCart = existingItem
-        ? cartItems.map(item => item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item)
-        : [...cartItems, { ...product, quantity }];
-      dispatch(syncCart(nextCart));
+      try {
+        const existingItem = cartItems.find(item => item.id === product.id);
+        let nextCart = existingItem
+          ? cartItems.map(item => item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item)
+          : [...cartItems, { ...product, quantity }];
+
+        const resultAction = await dispatch(syncCart(nextCart));
+        if (syncCart.rejected.match(resultAction)) {
+          throw new Error('Cart sync failed');
+        }
+        showToast(`${product.name} added to cart`, 'success');
+      } catch (err) {
+        dispatch(setCart(previousCart));
+        showToast('Could not sync cart with server. Reverting...', 'error');
+      }
+    } else {
+      showToast(`${product.name} added to cart`, 'success');
     }
-    showToast(`${product.name} added to cart`, 'success');
   };
 
   const handleBuyNow = () => {
@@ -152,7 +166,11 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
             onMomentumScrollEnd={(e) => setActiveImageIndex(Math.round(e.nativeEvent.contentOffset.x / width))}
             renderItem={({ item }) => (
               <View style={styles.imageItem}>
-                <Image source={{ uri: item }} style={styles.mainImage} resizeMode="contain" />
+                <Image
+                  source={{ uri: getOptimizedImageUrl(item, 800, 800) }}
+                  style={styles.mainImage}
+                  resizeMode="contain"
+                />
               </View>
             )}
             keyExtractor={(_, index) => `img-${index}`}

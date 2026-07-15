@@ -108,17 +108,28 @@ const cartSlice = createSlice({
     },
     removeFromSaved: (state, action: PayloadAction<string>) => {
       state.savedItems = state.savedItems.filter(item => item.id !== action.payload);
+    },
+    setCart: (state, action: PayloadAction<CartItem[]>) => {
+      state.items = action.payload;
+      state.totalAmount = state.items.reduce((total, item) => total + item.price * item.quantity, 0);
     }
   },
   extraReducers: (builder) => {
     builder
+      .addCase(syncCart.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(syncCart.fulfilled, (state, action) => {
+        state.loading = false;
         state.items = action.payload.map((item: any) => ({
           ...item.product,
           id: item.product._id || item.product.id,
           quantity: item.quantity
         }));
         state.totalAmount = state.items.reduce((total, item) => total + item.price * item.quantity, 0);
+      })
+      .addCase(syncCart.rejected, (state) => {
+        state.loading = false;
       })
       .addCase(syncSavedItems.fulfilled, (state, action) => {
         state.savedItems = action.payload.map((item: any) => ({
@@ -154,6 +165,7 @@ export const {
   clearCart,
   saveForLater,
   moveToCart,
-  removeFromSaved
+  removeFromSaved,
+  setCart
 } = cartSlice.actions;
 export default cartSlice.reducer;

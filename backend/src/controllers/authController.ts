@@ -27,7 +27,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     res.status(201).json({
       token: accessToken,
       refreshToken,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        addresses: user.addresses,
+        phoneNumbers: user.phoneNumbers
+      }
     });
   } catch (error) {
     res.status(500).json({ message: 'Error registering user', error });
@@ -62,7 +69,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({
       token: accessToken,
       refreshToken,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        addresses: user.addresses,
+        phoneNumbers: user.phoneNumbers
+      }
     });
   } catch (error: any) {
     console.error(`[LOGIN_ERROR] Message: ${error.message}`);
@@ -109,7 +123,9 @@ export const verifyToken = async (req: any, res: Response): Promise<void> => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        addresses: user.addresses,
+        phoneNumbers: user.phoneNumbers
       }
     });
   } catch (error) {
