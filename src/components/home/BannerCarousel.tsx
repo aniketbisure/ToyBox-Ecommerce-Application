@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, FlatList, Dimensions, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { COLORS, FONTS, SHADOWS } from '../../constants/theme';
@@ -13,15 +13,43 @@ interface BannerCarouselProps {
 
 const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners }) => {
   const { colors } = useTheme();
+  const flatListRef = useRef<FlatList>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (!banners || banners.length <= 1) return;
+
+    const interval = setInterval(() => {
+      const nextIndex = (currentIndex + 1) % banners.length;
+      setCurrentIndex(nextIndex);
+      flatListRef.current?.scrollToIndex({
+        index: nextIndex,
+        animated: true,
+      });
+    }, 4000); // Scroll every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [currentIndex, banners]);
+
   if (!banners || banners.length === 0) return null;
 
   return (
     <View style={styles.bannerWrapper}>
       <FlatList
+        ref={flatListRef}
         data={banners}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
+        getItemLayout={(_, index) => ({
+          length: width,
+          offset: width * index,
+          index,
+        })}
+        onMomentumScrollEnd={(e) => {
+          const index = Math.round(e.nativeEvent.contentOffset.x / width);
+          setCurrentIndex(index);
+        }}
         keyExtractor={(item) => item.id || (item as any)._id}
         renderItem={({ item }) => (
           <View style={[styles.dealsContainer, { width: width - 30, marginHorizontal: 15 }]}>
@@ -57,7 +85,7 @@ const BannerCarousel: React.FC<BannerCarouselProps> = ({ banners }) => {
 
 const styles = StyleSheet.create({
   bannerWrapper: {
-    marginBottom: 30,
+    marginVertical: 20,
     height: 160,
   },
   dealsContainer: {

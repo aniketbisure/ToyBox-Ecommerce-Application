@@ -48,11 +48,15 @@ const EditProductScreen = ({ navigation, route }: any) => {
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
-    const requiredFields = ['name', 'price', 'listPrice', 'category', 'subCategory', 'image', 'sku', 'brand', 'productType', 'minimumAge', 'countryOfOrigin'];
+    const requiredFields = [
+      'name', 'description', 'price', 'listPrice', 'category', 'subCategory',
+      'image', 'stock', 'sku', 'brand', 'productType', 'minimumAge',
+      'manufacturer', 'countryOfOrigin'
+    ];
     const missingFields = requiredFields.filter(f => !formData[f as keyof typeof formData]);
 
     if (missingFields.length > 0) {
-      showToast('Please fill in all required fields (*)', 'error');
+      showToast('Please fill in all details', 'error');
       return;
     }
 
@@ -133,7 +137,7 @@ const EditProductScreen = ({ navigation, route }: any) => {
             {renderInput('Main Category *', 'category', 'e.g. Toys')}
           </View>
           <View style={{ width: '48%' }}>
-            {renderInput('Sub Category', 'subCategory', 'e.g. Building Sets')}
+            {renderInput('Sub Category *', 'subCategory', 'e.g. Building Sets')}
           </View>
         </View>
 
@@ -167,7 +171,7 @@ const EditProductScreen = ({ navigation, route }: any) => {
         </View>
 
         {renderInput('Image URL *', 'image', 'https://example.com/image.jpg')}
-        {renderInput('Description', 'description', 'Write something about the toy...', 'default', true)}
+        {renderInput('Description *', 'description', 'Write something about the toy...', 'default', true)}
 
         <TouchableOpacity
           style={[styles.saveBtn, loading && styles.disabledBtn]}

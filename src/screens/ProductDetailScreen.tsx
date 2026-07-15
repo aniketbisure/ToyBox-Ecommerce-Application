@@ -311,7 +311,7 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
     opacity: 0, // Hidden by default, can be shown on scroll
   },
   headerRight: { flexDirection: 'row', gap: 10 },
-  scrollContent: { paddingBottom: 100 },
+  scrollContent: { paddingBottom: 150 },
 
   imageGallery: {
     width: width,

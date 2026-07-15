@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,21 +22,30 @@ const CategoriesScreen = ({ navigation }: any) => {
   const bottomTabHeight = Platform.OS === 'ios' ? 85 : 70;
   const { categories, ageRanges } = useSelector((state: RootState) => state.config);
   const { products } = useSelector((state: RootState) => state.products);
-  const [selectedCategory, setSelectedCategory] = useState('All Toys');
+  const [selectedSubCategory, setSelectedSubCategory] = useState('All Toys');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const subCategories = useMemo(() => {
+    const subs = new Set<string>();
+    products.forEach(p => {
+      if (p.subCategory) subs.add(p.subCategory);
+      // Fallback to category if subCategory is missing
+      else if (p.category) subs.add(p.category);
+    });
+    return Array.from(subs).sort();
+  }, [products]);
 
   const sidebarItems = [
     { id: '1', name: 'All Toys', icon: 'toy-brick-outline', color: COLORS.primary },
-    ...categories.map((c, i) => ({ id: (i + 2).toString(), name: c, icon: 'tag-outline', color: COLORS.text }))
+    ...subCategories.map((sub, i) => ({ id: (i + 2).toString(), name: sub, icon: 'tag-outline', color: COLORS.text }))
   ];
 
   const categoryProducts = products.filter(p => {
-    const pCat = (p.category || '').trim().toLowerCase();
-    const sCat = selectedCategory.trim().toLowerCase();
-
-    const matchesCategory = selectedCategory === 'All Toys' || pCat === sCat;
+    const matchesSubCategory = selectedSubCategory === 'All Toys' ||
+      p.subCategory === selectedSubCategory ||
+      p.category === selectedSubCategory;
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return matchesSubCategory && matchesSearch;
   });
 
   const handleAgeRangePress = (ageRange: any) => {
@@ -47,14 +56,14 @@ const CategoriesScreen = ({ navigation }: any) => {
   };
 
   const renderSidebarItem = ({ item }: any) => {
-    const isActive = selectedCategory === item.name;
+    const isActive = selectedSubCategory === item.name;
     return (
       <TouchableOpacity
         style={[
           styles.sidebarItem,
           isActive && styles.activeSidebarItem
         ]}
-        onPress={() => setSelectedCategory(item.name)}
+        onPress={() => setSelectedSubCategory(item.name)}
       >
         <View style={[
           styles.iconCircle,
@@ -117,9 +126,9 @@ const CategoriesScreen = ({ navigation }: any) => {
         <ScrollView
           style={styles.contentArea}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
         >
-          <Text style={styles.sectionTitle}>{selectedCategory} Collection</Text>
+          <Text style={styles.sectionTitle}>{selectedSubCategory} Collection</Text>
           <View style={styles.grid}>
             {categoryProducts.map((item, i) => (
               <TouchableOpacity
@@ -142,7 +151,7 @@ const CategoriesScreen = ({ navigation }: any) => {
             )}
           </View>
 
-          {selectedCategory === 'All Toys' && ageRanges && ageRanges.length > 0 && (
+          {selectedSubCategory === 'All Toys' && ageRanges && ageRanges.length > 0 && (
             <>
               <Text style={styles.sectionTitle}>Shop by Age</Text>
               <View style={styles.grid}>

@@ -63,8 +63,13 @@ const AdminProductsScreen = ({ navigation }: any) => {
       <Image source={{ uri: item.image }} style={styles.productImage} />
       <View style={styles.productInfo}>
         <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
-        <Text style={styles.productCategory}>{item.mainCategory || item.category}</Text>
-        <Text style={styles.productPrice}>₹{item.price}</Text>
+        <Text style={styles.productCategory}>{item.mainCategory || item.category} {item.subCategory ? `> ${item.subCategory}` : ''}</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 5 }}>
+          <Text style={styles.productPrice}>₹{item.price}</Text>
+          <Text style={[styles.productCategory, { color: item.stock < 10 ? COLORS.error : COLORS.success }]}>
+            Stock: {item.stock}
+          </Text>
+        </View>
       </View>
       <View style={styles.actionButtons}>
         <TouchableOpacity

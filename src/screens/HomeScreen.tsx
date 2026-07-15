@@ -362,7 +362,7 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
     textAlign: 'center',
   },
   listContent: {
-    paddingBottom: 20,
+    paddingBottom: 100,
   },
   columnWrapper: {
     paddingHorizontal: 10,
