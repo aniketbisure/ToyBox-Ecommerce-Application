@@ -44,15 +44,25 @@ export const validateAuth = (req: Request, res: Response, next: NextFunction) =>
 };
 
 export const validateOrder = (req: Request, res: Response, next: NextFunction) => {
-  const { orderItems, shippingAddress } = req.body;
+  const { orderItems, shippingAddress, paymentMethod, contactNumber } = req.body;
 
   if (!orderItems || orderItems.length === 0) {
     res.status(400).json({ message: 'Order must contain at least one item' });
     return;
   }
 
-  if (!shippingAddress || !shippingAddress.address || !shippingAddress.city) {
+  if (!shippingAddress || !shippingAddress.address || !shippingAddress.city || !shippingAddress.postalCode) {
     res.status(400).json({ message: 'Complete shipping address is required' });
+    return;
+  }
+
+  if (!paymentMethod) {
+    res.status(400).json({ message: 'Payment method is required' });
+    return;
+  }
+
+  if (!contactNumber || contactNumber.length < 10) {
+    res.status(400).json({ message: 'Valid contact number is required' });
     return;
   }
 

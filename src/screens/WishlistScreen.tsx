@@ -76,16 +76,26 @@ const WishlistScreen = ({ navigation }: any) => {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Your Wish List</Text>
-        <Text style={styles.subtitle}>{items.length} items</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Icon name="arrow-left" size={28} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Your Wish List</Text>
       </View>
 
       {items.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Icon name="heart-outline" size={80} color="#DDD" />
+          <View style={styles.emptyIconContainer}>
+            <Icon name="heart-outline" size={80} color={COLORS.primary} opacity={0.2} />
+          </View>
           <Text style={styles.emptyTitle}>Your Wish List is empty</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('HomeTab')}>
-            <Text style={styles.shopLink}>Continue shopping</Text>
+          <Text style={styles.emptySubtitle}>
+            Save your favorite items here to keep track of what you love!
+          </Text>
+          <TouchableOpacity
+            style={styles.shopBtn}
+            onPress={() => navigation.navigate('HomeTab')}
+          >
+            <Text style={styles.shopBtnText}>Start Shopping</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -95,6 +105,9 @@ const WishlistScreen = ({ navigation }: any) => {
           renderItem={renderItem}
           contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 100 }]}
           showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <Text style={styles.subtitle}>{items.length} items</Text>
+          }
         />
       )}
     </View>
@@ -104,14 +117,33 @@ const WishlistScreen = ({ navigation }: any) => {
 const createStyles = (colors: any) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 25,
+    paddingTop: 10,
     backgroundColor: colors.card,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
     ...SHADOWS.light,
   },
-  title: { fontSize: 24, fontWeight: '800', color: colors.text },
-  subtitle: { fontSize: 14, color: colors.gray, marginTop: 4, fontWeight: '600' },
+  backBtn: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.text,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: colors.gray,
+    marginTop: 4,
+    fontWeight: '600',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
   list: { paddingVertical: 15, paddingHorizontal: 15 },
   card: {
     backgroundColor: colors.card,
@@ -156,9 +188,48 @@ const createStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.lightGray,
   },
   removeText: { fontSize: 14, color: colors.text, fontWeight: '600' },
-  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40 },
-  emptyTitle: { fontSize: 22, fontWeight: '800', color: colors.text, marginTop: 20, marginBottom: 10, textAlign: 'center' },
-  shopLink: { fontSize: 16, color: COLORS.secondary, fontWeight: '700', textDecorationLine: 'underline' },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    paddingBottom: 100,
+  },
+  emptyIconContainer: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: COLORS.primary + '10',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.text,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 15,
+    color: colors.gray,
+    textAlign: 'center',
+    marginBottom: 35,
+    lineHeight: 22,
+  },
+  shopBtn: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 40,
+    paddingVertical: 16,
+    borderRadius: 20,
+    ...SHADOWS.medium,
+  },
+  shopBtnText: {
+    fontSize: 16,
+    color: COLORS.white,
+    fontWeight: '800',
+  },
 });
 
 export default WishlistScreen;

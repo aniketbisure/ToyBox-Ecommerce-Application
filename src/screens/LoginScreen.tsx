@@ -73,11 +73,19 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
     >
       <StatusBar barStyle="dark-content" />
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 40 }]}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 40 }]}
         showsVerticalScrollIndicator={false}
       >
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+        >
+          <Icon name="arrow-left" size={28} color="#2D3436" />
+        </TouchableOpacity>
+
         <View style={styles.header}>
           <Logo size={120} />
+          <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Unlock a world of play for your little ones</Text>
         </View>
 
@@ -185,43 +193,24 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 25,
   },
+  backBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 15,
+    backgroundColor: COLORS.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...SHADOWS.light,
+    marginBottom: 20,
+  },
   header: {
     alignItems: 'center',
     marginBottom: 40,
   },
-  logoWrapper: {
-    width: 100,
-    height: 100,
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  logoCircle: {
-    width: 85,
-    height: 85,
-    borderRadius: 30,
-    backgroundColor: COLORS.white,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...SHADOWS.medium,
-    zIndex: 2,
-  },
-  logoCircleSmall: {
-    width: 25,
-    height: 25,
-    borderRadius: 12,
-    position: 'absolute',
-    bottom: 5,
-    right: 5,
-    zIndex: 3,
-    borderWidth: 3,
-    borderColor: '#F8F9FD',
-  },
   title: {
     ...FONTS.h1,
     fontSize: 32,
-    color: COLORS.text,
+    color: '#2D3436',
     letterSpacing: 1,
   },
   subtitle: {
@@ -244,7 +233,7 @@ const styles = StyleSheet.create({
     ...FONTS.body,
     fontWeight: '700',
     marginBottom: 10,
-    color: COLORS.text,
+    color: '#2D3436',
     fontSize: 14,
   },
   inputWrapper: {
@@ -263,7 +252,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     ...FONTS.body,
-    color: COLORS.text,
+    color: '#000000',
     fontSize: 15,
   },
   forgotBtn: {

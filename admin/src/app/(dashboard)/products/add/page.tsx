@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import api from "../../../../services/apiService";
+import ImageUpload from "../../../../components/ImageUpload";
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -332,25 +333,12 @@ export default function AddProductPage() {
         {/* ── MEDIA ── */}
         {activeTab === "media" && (
           <div className="space-y-5 lg:space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                Main Image URL *
-              </label>
-              <input
-                type="url"
-                value={formData.image}
-                onChange={(e) => set("image", e.target.value)}
-                placeholder="https://example.com/product-image.jpg"
-                className="w-full p-4 bg-gray-50 rounded-2xl outline-none border-2 border-transparent focus:border-primary transition-all"
-              />
-              {formData.image && (
-                <img
-                  src={formData.image}
-                  alt="Preview"
-                  className="mt-2 h-36 lg:h-40 rounded-2xl object-contain border border-gray-100"
-                />
-              )}
-            </div>
+            <ImageUpload
+              label="Main Product Image *"
+              value={formData.image}
+              onChange={(url) => set("image", url)}
+            />
+
             <div className="space-y-2">
               <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                 Additional Image URLs (one per line)

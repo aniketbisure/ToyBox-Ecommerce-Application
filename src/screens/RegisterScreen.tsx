@@ -67,7 +67,7 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
             navigation.goBack();
           }}
         >
-          <Icon name="arrow-left" size={28} color={COLORS.text} />
+          <Icon name="arrow-left" size={28} color="#2D3436" />
         </TouchableOpacity>
 
         <View style={styles.header}>
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   title: {
     ...FONTS.h1,
     fontSize: 32,
-    color: COLORS.text,
+    color: '#2D3436',
   },
   subtitle: {
     ...FONTS.body,
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     ...FONTS.body,
     fontWeight: '700',
     marginBottom: 10,
-    color: COLORS.text,
+    color: '#2D3436',
     fontSize: 14,
   },
   inputWrapper: {
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     ...FONTS.body,
-    color: COLORS.text,
+    color: '#000000',
     fontSize: 15,
   },
   registerBtn: {

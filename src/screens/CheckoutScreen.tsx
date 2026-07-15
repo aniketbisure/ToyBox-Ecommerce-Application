@@ -56,12 +56,20 @@ const CheckoutScreen = ({ navigation }: any) => {
   }, [user?.id, items, totalAmount]);
 
   const handlePayment = async () => {
+    if (!user?.name || !user?.email) {
+      showToast('Please complete your profile (name & email) first', 'error');
+      return;
+    }
     if (!selectedAddress) {
       showToast('Please select a shipping address', 'error');
       return;
     }
-    if (!selectedPhone) {
-      showToast('Please provide a contact number', 'error');
+    if (!selectedPhone || selectedPhone.length < 10) {
+      showToast('Please provide a valid contact number', 'error');
+      return;
+    }
+    if (!paymentMethod) {
+      showToast('Please select a payment method', 'error');
       return;
     }
 
