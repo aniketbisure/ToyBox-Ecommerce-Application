@@ -15,6 +15,7 @@ import {
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../redux/store';
 import { clearCart, syncCart } from '../redux/slices/cartSlice';
+import { setSelectedPhoneNumber } from '../redux/slices/authSlice';
 import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
 import { showToast } from '../utils/toastService';
 import apiClient from '../api/apiClient';
@@ -36,7 +37,7 @@ const CheckoutScreen = ({ navigation }: any) => {
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const { totalAmount, items } = useSelector((state: RootState) => state.cart);
-  const user = useSelector((state: RootState) => state.auth.user);
+  const { user, selectedPhoneNumber } = useSelector((state: RootState) => state.auth);
   const configState = useSelector((state: RootState) => state.config);
   const razorpayKey = getRazorpayKey(configState);
 
@@ -47,7 +48,7 @@ const CheckoutScreen = ({ navigation }: any) => {
     user?.addresses && user.addresses.length > 0 ? user.addresses[0] : null
   );
   const [selectedPhone, setSelectedPhone] = useState<string>(
-    user?.phoneNumbers && user.phoneNumbers.length > 0 ? user.phoneNumbers[0] : ''
+    selectedPhoneNumber || (user?.phoneNumbers && user.phoneNumbers.length > 0 ? user.phoneNumbers[0] : '')
   );
 
   const [showAddressModal, setShowAddressModal] = useState(false);
@@ -255,7 +256,11 @@ const CheckoutScreen = ({ navigation }: any) => {
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, { backgroundColor: colors.card, borderTopColor: colors.lightGray }]}>
+      <View style={[styles.footer, {
+        backgroundColor: colors.card,
+        borderTopColor: colors.lightGray,
+        paddingBottom: insets.bottom > 0 ? insets.bottom : 20
+      }]}>
         <CustomButton title={`Place Order • ₹${totalAmount.toLocaleString()}`} onPress={handlePayment} loading={loading} />
       </View>
 
@@ -303,7 +308,11 @@ const CheckoutScreen = ({ navigation }: any) => {
               renderItem={({ item }) => (
                 <TouchableOpacity
                   style={[styles.selectCard, { backgroundColor: colors.lightGray }, selectedPhone === item && styles.activeSelect]}
-                  onPress={() => { setSelectedPhone(item); setShowPhoneModal(false); }}
+                  onPress={() => {
+                    setSelectedPhone(item);
+                    dispatch(setSelectedPhoneNumber(item));
+                    setShowPhoneModal(false);
+                  }}
                 >
                   <Text style={[styles.selectText, { color: colors.text }]}>{item}</Text>
                 </TouchableOpacity>

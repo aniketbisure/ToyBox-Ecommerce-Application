@@ -15,6 +15,7 @@ import {
 import { useRouter } from "next/navigation";
 import api from "../../../../services/apiService";
 import ImageUpload from "../../../../components/ImageUpload";
+import MultiImageUpload from "../../../../components/MultiImageUpload";
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -339,6 +340,12 @@ export default function AddProductPage() {
               onChange={(url) => set("image", url)}
             />
 
+            <MultiImageUpload
+              label="Upload Additional Images"
+              values={formData.images}
+              onChange={(urls) => set("images", urls)}
+            />
+
             <div className="space-y-2">
               <label className="text-xs font-black text-gray-400 uppercase tracking-widest">
                 Additional Image URLs (one per line)
@@ -358,7 +365,7 @@ export default function AddProductPage() {
                 placeholder={
                   "https://example.com/img1.jpg\nhttps://example.com/img2.jpg"
                 }
-                className="w-full p-4 bg-gray-50 rounded-2xl outline-none font-mono text-sm"
+                className="w-full p-4 bg-gray-50 rounded-2xl outline-none font-mono text-sm border-2 border-transparent focus:border-primary transition-all"
               />
             </div>
           </div>

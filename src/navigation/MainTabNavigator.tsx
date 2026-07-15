@@ -40,10 +40,6 @@ const MainTabNavigator = () => {
           paddingTop: 10,
           borderTopLeftRadius: 30,
           borderTopRightRadius: 30,
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
           ...SHADOWS.dark,
         },
       })}
@@ -72,6 +68,13 @@ const MainTabNavigator = () => {
         name="ProfileTab"
         component={ProfileStack}
         options={{ tabBarLabel: 'Account' }}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            // When Account tab is pressed, always reset to the main Profile screen
+            e.preventDefault();
+            navigation.navigate('ProfileTab', { screen: 'ProfileMain' });
+          },
+        })}
       />
     </Tab.Navigator>
   );

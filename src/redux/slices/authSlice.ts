@@ -16,6 +16,7 @@ interface AuthState {
   user: User | null;
   token: string | null;
   refreshToken: string | null;
+  selectedPhoneNumber: string | null;
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
@@ -25,6 +26,7 @@ const initialState: AuthState = {
   user: null,
   token: null,
   refreshToken: null,
+  selectedPhoneNumber: null,
   isAuthenticated: false,
   loading: false,
   error: null,
@@ -130,6 +132,9 @@ const authSlice = createSlice({
       if (state.user) {
         state.user.phoneNumbers = action.payload;
       }
+    },
+    setSelectedPhoneNumber: (state, action: PayloadAction<string>) => {
+      state.selectedPhoneNumber = action.payload;
     }
   },
   extraReducers: (builder) => {
@@ -192,5 +197,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, clearError, setTokens, updateUserAddress } = authSlice.actions;
+export const { logout, clearError, setTokens, updateUserAddress, setSelectedPhoneNumber } = authSlice.actions;
 export default authSlice.reducer;
