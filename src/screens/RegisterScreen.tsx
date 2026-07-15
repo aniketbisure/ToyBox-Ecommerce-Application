@@ -145,33 +145,6 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
               <Text style={styles.loginText}>Log In</Text>
             </TouchableOpacity>
           </View>
-
-          <View style={styles.dividerContainer}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>OR SIGN UP WITH</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <View style={styles.socialRow}>
-            <TouchableOpacity
-              style={[styles.socialBtn, { borderColor: '#EA4335' }]}
-              onPress={() => showToast('Google sign-up coming soon', 'info')}
-            >
-              <Icon name="google" size={24} color="#EA4335" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.socialBtn, { borderColor: '#1877F2' }]}
-              onPress={() => showToast('Facebook sign-up coming soon', 'info')}
-            >
-              <Icon name="facebook" size={24} color="#1877F2" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.socialBtn, { borderColor: isDarkMode ? '#FFFFFF' : '#000000' }]}
-              onPress={() => showToast('Apple sign-up coming soon', 'info')}
-            >
-              <Icon name="apple" size={24} color={isDarkMode ? '#FFFFFF' : '#000000'} />
-            </TouchableOpacity>
-          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -268,39 +241,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontWeight: '800',
     fontSize: 14,
   },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 25,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.border,
-  },
-  dividerText: {
-    marginHorizontal: 15,
-    color: colors.gray,
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1,
-  },
-  socialRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 15,
-  },
-  socialBtn: {
-    width: 60,
-    height: 60,
-    borderRadius: 18,
-    backgroundColor: colors.card,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...SHADOWS.light,
-  }
 });
 
 export default RegisterScreen;
