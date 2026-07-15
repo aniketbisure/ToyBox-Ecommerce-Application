@@ -231,11 +231,64 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
 
         <View style={styles.divider} />
 
+        {/* Bullet Points */}
+        {product.bulletPoints && product.bulletPoints.length > 0 && (
+          <View style={styles.bulletSection}>
+            <Text style={styles.sectionTitle}>About this item</Text>
+            {product.bulletPoints.map((point: string, index: number) => (
+              <View key={index} style={styles.bulletRow}>
+                <View style={styles.bulletDot} />
+                <Text style={styles.bulletText}>{point}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {product.bulletPoints && product.bulletPoints.length > 0 && <View style={styles.divider} />}
+
         {/* Description */}
         <View style={styles.descriptionSection}>
-          <Text style={styles.sectionTitle}>About this item</Text>
+          <Text style={styles.sectionTitle}>Product Description</Text>
           <Text style={styles.descriptionText}>{product.description}</Text>
         </View>
+
+        <View style={styles.divider} />
+
+        {/* Technical Details */}
+        <View style={styles.specsSection}>
+          <Text style={styles.sectionTitle}>Technical Details</Text>
+          <View style={styles.specsTable}>
+            {[
+              { label: 'Brand', value: product.brand },
+              { label: 'Manufacturer', value: product.manufacturer },
+              { label: 'Model Number', value: product.modelNumber },
+              { label: 'Sub-Category', value: product.subCategory },
+              { label: 'Age Range', value: product.ageRangeDescription },
+              { label: 'Material', value: product.materialType },
+              { label: 'Country of Origin', value: product.countryOfOrigin },
+              { label: 'Minimum Age', value: product.minimumAge ? `${product.minimumAge} Months` : null },
+              { label: 'Item Weight', value: product.weight?.value ? `${product.weight.value} ${product.weight.unit}` : null },
+              { label: 'Product Dimensions', value: product.dimensions?.length ? `${product.dimensions.length} x ${product.dimensions.width} x ${product.dimensions.height} ${product.dimensions.unit}` : null },
+              { label: 'Batteries Required', value: product.batteriesRequired ? `Yes (${product.batteryType})` : 'No' },
+              { label: 'SKU', value: product.sku },
+            ].filter(s => s.value).map((spec, index) => (
+              <View key={index} style={[styles.specRow, index % 2 === 0 && styles.specRowEven]}>
+                <Text style={styles.specLabel}>{spec.label}</Text>
+                <Text style={styles.specValue}>{spec.value}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {product.smallPartsWarning && (
+          <View style={styles.safetySection}>
+            <View style={styles.safetyHeader}>
+              <Icon name="alert-circle-outline" size={20} color="#B12704" />
+              <Text style={styles.safetyTitle}>Safety Warning</Text>
+            </View>
+            <Text style={styles.safetyText}>{product.safetyWarningText || 'CHOKING HAZARD – Small parts. Not for children under 3 yrs.'}</Text>
+          </View>
+        )}
 
         <View style={styles.divider} />
 
@@ -535,6 +588,25 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
   },
 
   divider: { height: 8, backgroundColor: colors.lightGray, marginVertical: 10 },
+  bulletSection: { padding: 20 },
+  bulletRow: {
+    flexDirection: 'row',
+    marginBottom: 10,
+    paddingRight: 15,
+  },
+  bulletDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.text,
+    marginTop: 8,
+    marginRight: 12,
+  },
+  bulletText: {
+    fontSize: 15,
+    color: colors.text,
+    lineHeight: 22,
+  },
   descriptionSection: { padding: 20 },
   sectionTitle: {
     ...FONTS.h3,
@@ -546,6 +618,58 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
     fontSize: 15,
     color: colors.textSecondary,
     lineHeight: 24,
+  },
+  specsSection: { padding: 20 },
+  specsTable: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  specRow: {
+    flexDirection: 'row',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  specRowEven: {
+    backgroundColor: colors.lightGray + '30',
+  },
+  specLabel: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.gray,
+    fontWeight: '600',
+  },
+  specValue: {
+    flex: 1.5,
+    fontSize: 14,
+    color: colors.text,
+  },
+  safetySection: {
+    margin: 20,
+    padding: 15,
+    backgroundColor: '#FFF5F5',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FFDADA',
+  },
+  safetyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  safetyTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#B12704',
+    marginLeft: 8,
+  },
+  safetyText: {
+    fontSize: 13,
+    color: '#444',
+    lineHeight: 18,
+    fontStyle: 'italic',
   },
   reviewSection: { padding: 20 },
   sectionHeader: {
