@@ -71,17 +71,13 @@ const UserSchema: Schema = new Schema({
 
 UserSchema.index({ role: 1 });
 
-UserSchema.pre('save', async function (this: any, next: any) {
-  if (!this.isModified('password')) {
-    return next();
+UserSchema.pre('save', async function (this: any) {
+  const user = this;
+  if (!user.isModified('password')) {
+    return;
   }
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error: any) {
-    next(error);
-  }
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(user.password, salt);
 });
 
 UserSchema.methods.matchPassword = async function (enteredPassword: string) {

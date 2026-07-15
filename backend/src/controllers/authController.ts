@@ -65,7 +65,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       user: { id: user._id, name: user.name, email: user.email, role: user.role }
     });
   } catch (error: any) {
-    console.error(`[LOGIN_ERROR] ${error.message}`);
+    console.error(`[LOGIN_ERROR] Message: ${error.message}`);
+    console.error(`[LOGIN_ERROR] Stack: ${error.stack}`);
     res.status(500).json({ message: 'Error logging in', error: error.message });
   }
 };
