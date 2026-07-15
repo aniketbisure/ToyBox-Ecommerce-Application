@@ -32,7 +32,7 @@ export const getConfig = async (req: Request, res: Response) => {
     }
 
     const finalConfig = {
-      ...config.toObject(),
+      ...(config ? config.toObject() : {}),
       razorpayKeyId: process.env.RAZORPAY_KEY_ID
     };
 
@@ -73,7 +73,7 @@ export const updateConfig = async (req: Request, res: Response) => {
     );
     configCache.del('app_config');
     res.json({
-      ...config.toObject(),
+      ...(config ? config.toObject() : {}),
       razorpayKeyId: process.env.RAZORPAY_KEY_ID
     });
   } catch (error) {
@@ -91,7 +91,7 @@ export const addCategory = async (req: Request, res: Response) => {
     );
     configCache.del('app_config');
     res.json({
-      ...config.toObject(),
+      ...(config ? config.toObject() : {}),
       razorpayKeyId: process.env.RAZORPAY_KEY_ID
     });
   } catch (error) {
@@ -109,7 +109,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
     );
     configCache.del('app_config');
     res.json({
-      ...config.toObject(),
+      ...(config ? config.toObject() : {}),
       razorpayKeyId: process.env.RAZORPAY_KEY_ID
     });
   } catch (error) {
@@ -127,7 +127,7 @@ export const addBanner = async (req: Request, res: Response) => {
     );
     configCache.del('app_config');
     res.json({
-      ...config.toObject(),
+      ...(config ? config.toObject() : {}),
       razorpayKeyId: process.env.RAZORPAY_KEY_ID
     });
   } catch (error) {
@@ -148,7 +148,7 @@ export const updateBanners = async (req: Request, res: Response) => {
     );
     configCache.del('app_config');
     res.json({
-      ...config.toObject(),
+      ...(config ? config.toObject() : {}),
       razorpayKeyId: process.env.RAZORPAY_KEY_ID
     });
   } catch (error) {
@@ -166,7 +166,7 @@ export const deleteBanner = async (req: Request, res: Response) => {
     );
     configCache.del('app_config');
     res.json({
-      ...config.toObject(),
+      ...(config ? config.toObject() : {}),
       razorpayKeyId: process.env.RAZORPAY_KEY_ID
     });
   } catch (error) {
