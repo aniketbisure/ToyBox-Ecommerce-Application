@@ -2,11 +2,14 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IBanner {
   id: string;
+  _id?: string;
   image: string;
   title: string;
   subtitle: string;
   link?: string;
   isActive: boolean;
+  startDate?: Date;
+  endDate?: Date;
 }
 
 export interface IAgeRange {

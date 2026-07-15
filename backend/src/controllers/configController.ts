@@ -5,17 +5,23 @@ export const getConfig = async (req: Request, res: Response) => {
   try {
     let config = await AppConfig.findOne();
     if (!config) {
-      // ... (default creation code remains the same)
+      config = await AppConfig.create({
+        banners: [],
+        categories: ['Toys', 'Games', 'Learning'],
+        ageRanges: []
+      });
     }
 
     // Filter banners based on scheduling
     const now = new Date();
-    config.banners = config.banners.filter(banner => {
-      if (!banner.isActive) return false;
-      if (banner.startDate && now < new Date(banner.startDate)) return false;
-      if (banner.endDate && now > new Date(banner.endDate)) return false;
-      return true;
-    });
+    if (config && config.banners) {
+      config.banners = config.banners.filter((banner: any) => {
+        if (!banner.isActive) return false;
+        if (banner.startDate && now < new Date(banner.startDate)) return false;
+        if (banner.endDate && now > new Date(banner.endDate)) return false;
+        return true;
+      });
+    }
 
     res.json(config);
   } catch (error) {
