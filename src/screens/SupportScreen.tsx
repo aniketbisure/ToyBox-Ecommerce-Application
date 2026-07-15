@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking, TextInput, ActivityIndicator } from 'react-native';
-import { COLORS, FONTS, SHADOWS } from '../constants/theme';
+import { COLORS, FONTS, SHADOWS, ThemeColors } from '../constants/theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../hooks/useTheme';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../redux/store';
 import { createSupportTicket, getMyTickets, resetSupportState } from '../redux/slices/supportSlice';
 import { showToast } from '../utils/toastService';
 import CustomButton from '../components/CustomButton';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 
 const SupportScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useThemedStyles(createStyles, [insets]);
   const dispatch = useDispatch<AppDispatch>();
 
   const { tickets, loading, success, error } = useSelector((state: RootState) => state.support);
@@ -73,12 +73,12 @@ const SupportScreen = ({ navigation }: any) => {
       </View>
 
       {supportOptions.map((item, index) => (
-        <TouchableOpacity key={index} style={[styles.optionCard, { backgroundColor: colors.card }]} onPress={() => handleAction(item)}>
+        <TouchableOpacity key={index} style={styles.optionCard} onPress={() => handleAction(item)}>
           <View style={[styles.iconBg, { backgroundColor: COLORS.primary + '15' }]}>
             <Icon name={item.icon} size={24} color={COLORS.primary} />
           </View>
           <View style={{ flex: 1, marginLeft: 15 }}>
-            <Text style={[styles.optionTitle, { color: colors.text }]}>{item.title}</Text>
+            <Text style={styles.optionTitle}>{item.title}</Text>
             <Text style={styles.optionValue}>{item.value}</Text>
           </View>
           <Icon name="chevron-right" size={20} color={colors.gray} />
@@ -106,7 +106,7 @@ const SupportScreen = ({ navigation }: any) => {
   const renderTickets = () => (
     <View style={{ flex: 1 }}>
       <View style={styles.tabHeader}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>{showForm ? 'New Ticket' : 'Your Requests'}</Text>
+        <Text style={styles.sectionTitle}>{showForm ? 'New Ticket' : 'Your Requests'}</Text>
         <TouchableOpacity style={styles.addBtn} onPress={() => setShowForm(!showForm)}>
           <Icon name={showForm ? "close" : "plus-circle-outline"} size={28} color={COLORS.primary} />
         </TouchableOpacity>
@@ -114,17 +114,17 @@ const SupportScreen = ({ navigation }: any) => {
 
       {showForm ? (
         <ScrollView style={styles.formContainer}>
-          <Text style={[styles.label, { color: colors.text }]}>Subject</Text>
+          <Text style={styles.label}>Subject</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+            style={styles.input}
             placeholder="What is this about?"
             placeholderTextColor={colors.gray}
             value={subject}
             onChangeText={setSubject}
           />
-          <Text style={[styles.label, { color: colors.text, marginTop: 15 }]}>Message</Text>
+          <Text style={[styles.label, { marginTop: 15 }]}>Message</Text>
           <TextInput
-            style={[styles.textArea, { backgroundColor: colors.card, color: colors.text }]}
+            style={styles.textArea}
             placeholder="Describe your issue in detail..."
             placeholderTextColor={colors.gray}
             value={message}
@@ -147,21 +147,21 @@ const SupportScreen = ({ navigation }: any) => {
           ) : tickets.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Icon name="message-off-outline" size={60} color={colors.gray + '50'} />
-              <Text style={[styles.emptyText, { color: colors.gray }]}>No support tickets found</Text>
+              <Text style={styles.emptyText}>No support tickets found</Text>
               <TouchableOpacity onPress={() => setShowForm(true)} style={{ marginTop: 15 }}>
                 <Text style={{ color: COLORS.primary, ...FONTS.h3 }}>Raise a new ticket</Text>
               </TouchableOpacity>
             </View>
           ) : (
             tickets.map((ticket) => (
-              <View key={ticket._id} style={[styles.ticketCard, { backgroundColor: colors.card }]}>
+              <View key={ticket._id} style={styles.ticketCard}>
                 <View style={styles.ticketHeader}>
-                  <Text style={[styles.ticketSubject, { color: colors.text }]} numberOfLines={1}>{ticket.subject}</Text>
+                  <Text style={styles.ticketSubject} numberOfLines={1}>{ticket.subject}</Text>
                   <View style={[styles.statusBadge, { backgroundColor: getStatusColor(ticket.status) + '20' }]}>
                     <Text style={[styles.statusText, { color: getStatusColor(ticket.status) }]}>{ticket.status}</Text>
                   </View>
                 </View>
-                <Text style={[styles.ticketMessage, { color: colors.gray }]} numberOfLines={2}>{ticket.message}</Text>
+                <Text style={styles.ticketMessage} numberOfLines={2}>{ticket.message}</Text>
                 {ticket.response && (
                   <View style={styles.responseContainer}>
                     <Text style={styles.responseLabel}>Admin Response:</Text>
@@ -188,7 +188,7 @@ const SupportScreen = ({ navigation }: any) => {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity
           onPress={() => {
@@ -211,8 +211,8 @@ const SupportScreen = ({ navigation }: any) => {
   );
 };
 
-const createStyles = (colors: any) => StyleSheet.create({
-  container: { flex: 1 },
+const createStyles = (colors: ThemeColors, isDarkMode: boolean, insets: EdgeInsets) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -236,25 +236,25 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   infoCard: { backgroundColor: COLORS.primary + '10', padding: 20, borderRadius: 20, marginBottom: 25, flexDirection: 'row', alignItems: 'center' },
   infoText: { flex: 1, marginLeft: 15, ...FONTS.body, fontSize: 13, color: colors.textSecondary },
-  optionCard: { flexDirection: 'row', alignItems: 'center', padding: 18, borderRadius: 15, marginBottom: 15, ...SHADOWS.light },
+  optionCard: { flexDirection: 'row', alignItems: 'center', padding: 18, borderRadius: 15, marginBottom: 15, backgroundColor: colors.card, ...SHADOWS.light },
   iconBg: { width: 48, height: 48, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  optionTitle: { ...FONTS.h3, fontSize: 16 },
+  optionTitle: { ...FONTS.h3, fontSize: 16, color: colors.text },
   optionValue: { ...FONTS.body, fontSize: 13, color: colors.gray, marginTop: 2 },
   tabHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginTop: 10, marginBottom: 10 },
-  sectionTitle: { ...FONTS.h3, fontSize: 18 },
+  sectionTitle: { ...FONTS.h3, fontSize: 18, color: colors.text },
   addBtn: { padding: 5 },
   formContainer: { padding: 20 },
-  label: { ...FONTS.body, fontWeight: '700', fontSize: 14, marginBottom: 8 },
-  input: { height: 55, borderRadius: 15, paddingHorizontal: 15, ...FONTS.body, fontSize: 15, borderWidth: 1, borderColor: colors.lightGray },
-  textArea: { height: 150, borderRadius: 15, paddingHorizontal: 15, paddingTop: 15, ...FONTS.body, fontSize: 15, borderWidth: 1, borderColor: colors.lightGray },
+  label: { ...FONTS.body, fontWeight: '700', fontSize: 14, marginBottom: 8, color: colors.text },
+  input: { height: 55, borderRadius: 15, paddingHorizontal: 15, ...FONTS.body, fontSize: 15, borderWidth: 1, borderColor: colors.lightGray, backgroundColor: colors.card, color: colors.text },
+  textArea: { height: 150, borderRadius: 15, paddingHorizontal: 15, paddingTop: 15, ...FONTS.body, fontSize: 15, borderWidth: 1, borderColor: colors.lightGray, backgroundColor: colors.card, color: colors.text },
   emptyContainer: { alignItems: 'center', marginTop: 80 },
-  emptyText: { ...FONTS.body, marginTop: 15 },
-  ticketCard: { padding: 18, borderRadius: 18, marginBottom: 15, ...SHADOWS.light },
+  emptyText: { ...FONTS.body, marginTop: 15, color: colors.gray },
+  ticketCard: { padding: 18, borderRadius: 18, marginBottom: 15, backgroundColor: colors.card, ...SHADOWS.light },
   ticketHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  ticketSubject: { ...FONTS.h4, flex: 1, marginRight: 10, fontSize: 16 },
+  ticketSubject: { ...FONTS.h4, flex: 1, marginRight: 10, fontSize: 16, color: colors.text },
   statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
   statusText: { fontSize: 10, fontWeight: '800' },
-  ticketMessage: { ...FONTS.body, fontSize: 13, marginBottom: 12, lineHeight: 18 },
+  ticketMessage: { ...FONTS.body, fontSize: 13, marginBottom: 12, lineHeight: 18, color: colors.gray },
   responseContainer: { backgroundColor: COLORS.primary + '05', padding: 12, borderRadius: 12, marginBottom: 10, borderLeftWidth: 4, borderLeftColor: COLORS.primary },
   responseLabel: { fontSize: 11, fontWeight: '700', color: COLORS.primary, marginBottom: 4 },
   responseText: { fontSize: 13, color: colors.textSecondary, lineHeight: 18 },

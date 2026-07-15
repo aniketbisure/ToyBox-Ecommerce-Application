@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -13,12 +13,12 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser, clearError } from '../redux/slices/authSlice';
 import { AppDispatch, RootState } from '../redux/store';
-import { COLORS, FONTS, SHADOWS } from '../constants/theme';
+import { COLORS, FONTS, SHADOWS, ThemeColors } from '../constants/theme';
 import { showToast } from '../utils/toastService';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CustomButton from '../components/CustomButton';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../hooks/useTheme';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 import { RegisterScreenNavigationProp } from '../types/navigation';
 
 interface RegisterScreenProps {
@@ -28,7 +28,7 @@ interface RegisterScreenProps {
 const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
   const insets = useSafeAreaInsets();
   const { colors, isDarkMode } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useThemedStyles(createStyles, [insets]);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -58,7 +58,7 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
     >
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 40 }]}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <TouchableOpacity
@@ -151,7 +151,7 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
   );
 };
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean, insets: EdgeInsets) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -159,6 +159,8 @@ const createStyles = (colors: any) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 25,
+    paddingTop: insets.top + 20,
+    paddingBottom: insets.bottom + 40,
   },
   backBtn: {
     width: 44,

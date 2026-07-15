@@ -2,19 +2,19 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, StatusBar } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store';
-import { COLORS, FONTS, SHADOWS } from '../constants/theme';
-import { moderateScale } from '../utils/responsive';
+import { FONTS, ThemeColors } from '../constants/theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
 import ProductCard from '../components/ProductCard';
 import { addToCart } from '../redux/slices/cartSlice';
 import { toggleWishlist } from '../redux/slices/wishlistSlice';
 import { showToast } from '../utils/toastService';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 
 const CategoryProductsScreen = ({ route, navigation }: any) => {
   const insets = useSafeAreaInsets();
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
+  const styles = useThemedStyles(createStyles, [insets]);
   const dispatch = useDispatch<AppDispatch>();
   const { categoryName } = route.params;
   const { products = [] } = useSelector((state: RootState) => state.products) || {};
@@ -46,13 +46,13 @@ const CategoryProductsScreen = ({ route, navigation }: any) => {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar barStyle="dark-content" />
+    <View style={styles.container}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Icon name="arrow-left" size={26} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>{categoryName} Toys</Text>
+        <Text style={styles.headerTitle}>{categoryName} Toys</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -67,7 +67,7 @@ const CategoryProductsScreen = ({ route, navigation }: any) => {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Icon name="package-variant" size={80} color={colors.lightGray} />
-            <Text style={[styles.emptyText, { color: colors.gray }]}>No products found in this category</Text>
+            <Text style={styles.emptyText}>No products found in this category</Text>
           </View>
         }
       />
@@ -75,9 +75,10 @@ const CategoryProductsScreen = ({ route, navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean, insets: EdgeInsets) => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -93,6 +94,7 @@ const styles = StyleSheet.create({
     ...FONTS.h2,
     fontSize: 20,
     textTransform: 'capitalize',
+    color: colors.text,
   },
   listContent: {
     paddingHorizontal: 10,
@@ -108,6 +110,7 @@ const styles = StyleSheet.create({
   emptyText: {
     ...FONTS.body,
     marginTop: 20,
+    color: colors.gray,
   }
 });
 

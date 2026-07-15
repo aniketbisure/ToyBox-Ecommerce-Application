@@ -1,11 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
-import { COLORS, FONTS } from '../constants/theme';
+import { COLORS, FONTS, ThemeColors } from '../constants/theme';
 import Logo from '../components/common/Logo';
+import { useThemedStyles } from '../hooks/useTheme';
 
 const { width } = Dimensions.get('window');
 
 const SplashScreen = () => {
+  const styles = useThemedStyles(createStyles);
   const scaleAnim = useRef(new Animated.Value(0.3)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -23,7 +25,7 @@ const SplashScreen = () => {
         useNativeDriver: true,
       })
     ]).start();
-  }, []);
+  }, [fadeAnim, scaleAnim]);
 
   return (
     <View style={styles.container}>
@@ -47,10 +49,10 @@ const SplashScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -65,7 +67,7 @@ const styles = StyleSheet.create({
   },
   tagline: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
     fontSize: 18,
     marginTop: 15,
     fontWeight: '600',

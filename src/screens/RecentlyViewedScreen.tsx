@@ -2,18 +2,19 @@ import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, StatusBar } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store';
-import { COLORS, FONTS, SHADOWS } from '../constants/theme';
+import { COLORS, FONTS, ThemeColors } from '../constants/theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
 import ProductCard from '../components/ProductCard';
 import { addToCart } from '../redux/slices/cartSlice';
 import { toggleWishlist } from '../redux/slices/wishlistSlice';
 import { showToast } from '../utils/toastService';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 
 const RecentlyViewedScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
+  const styles = useThemedStyles(createStyles, [insets]);
   const dispatch = useDispatch<AppDispatch>();
   const { recentlyViewed = [] } = useSelector((state: RootState) => state.products) || {};
   const wishlistItems = useSelector((state: RootState) => state.wishlist?.items ?? []);
@@ -34,13 +35,13 @@ const RecentlyViewedScreen = ({ navigation }: any) => {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar barStyle="dark-content" />
+    <View style={styles.container}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Icon name="arrow-left" size={26} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Recently Viewed</Text>
+        <Text style={styles.headerTitle}>Recently Viewed</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -55,9 +56,9 @@ const RecentlyViewedScreen = ({ navigation }: any) => {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Icon name="history" size={80} color={colors.lightGray} />
-            <Text style={[styles.emptyText, { color: colors.gray }]}>Your history is empty</Text>
+            <Text style={styles.emptyText}>Your history is empty</Text>
             <TouchableOpacity
-                style={[styles.shopBtn, { backgroundColor: COLORS.primary }]}
+                style={styles.shopBtn}
                 onPress={() => navigation.navigate('HomeTab')}
             >
                 <Text style={styles.shopBtnText}>Start Browsing</Text>
@@ -69,16 +70,23 @@ const RecentlyViewedScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 15, paddingBottom: 15 },
+const createStyles = (colors: ThemeColors, isDarkMode: boolean, insets: EdgeInsets) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    paddingBottom: 15,
+    backgroundColor: colors.card,
+  },
   backBtn: { padding: 5 },
-  headerTitle: { ...FONTS.h2, fontSize: 20 },
+  headerTitle: { ...FONTS.h2, fontSize: 20, color: colors.text },
   listContent: { paddingHorizontal: 10, paddingBottom: 40 },
   columnWrapper: { justifyContent: 'space-between' },
   emptyContainer: { alignItems: 'center', marginTop: 100, paddingHorizontal: 40 },
-  emptyText: { ...FONTS.body, marginTop: 20, textAlign: 'center', marginBottom: 20 },
-  shopBtn: { paddingHorizontal: 25, paddingVertical: 12, borderRadius: 15 },
+  emptyText: { ...FONTS.body, marginTop: 20, textAlign: 'center', marginBottom: 20, color: colors.gray },
+  shopBtn: { paddingHorizontal: 25, paddingVertical: 12, borderRadius: 15, backgroundColor: COLORS.primary },
   shopBtnText: { color: '#FFF', fontWeight: '700' }
 });
 

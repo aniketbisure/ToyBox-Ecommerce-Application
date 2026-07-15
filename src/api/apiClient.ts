@@ -13,7 +13,6 @@ const getBaseURL = (): string => {
 };
 
 const baseURL = getBaseURL();
-console.log('🌐 API Base URL:', baseURL);
 
 const apiClient = axios.create({
   baseURL,
@@ -23,7 +22,8 @@ const apiClient = axios.create({
   },
 });
 
-import { refreshTokenAction, logoutUser as logout } from '../redux/slices/authSlice';
+// Dynamic imports are used inside interceptors to avoid circular dependencies
+// with authSlice/store.
 
 // Request Interceptor for Auth Token
 apiClient.interceptors.request.use(
@@ -53,16 +53,18 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry && refreshToken) {
       originalRequest._retry = true;
       try {
+        const { refreshTokenAction, logoutUser } = await import('../redux/slices/authSlice');
         const resultAction = await store.dispatch(refreshTokenAction(refreshToken) as any);
         if (refreshTokenAction.fulfilled.match(resultAction)) {
           originalRequest.headers.Authorization = `Bearer ${resultAction.payload.token}`;
           return apiClient(originalRequest);
         } else {
           // Token refresh fulfilled but returned an error payload
-          store.dispatch(logout() as any);
+          store.dispatch(logoutUser() as any);
         }
       } catch (err) {
-        store.dispatch(logout() as any);
+        const { logoutUser } = await import('../redux/slices/authSlice');
+        store.dispatch(logoutUser() as any);
       }
     }
     return Promise.reject(error);

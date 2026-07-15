@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import fs from 'fs';
@@ -25,6 +26,8 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/toybox';
 
 // Trust Render's reverse proxy so express-rate-limit reads the real client IP
 app.set('trust proxy', 1);
+
+app.use(compression());
 
 // SECURITY FIX: Fail fast if critical secrets are missing
 const REQUIRED_ENV = [

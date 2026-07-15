@@ -36,9 +36,7 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: any, { rejectWithValue }) => {
     try {
-      console.log('[AUTH_SLICE] Attempting login to:', apiClient.defaults.baseURL + '/auth/login');
       const response = await apiClient.post('/auth/login', credentials);
-      console.log('[AUTH_SLICE] Login response received:', response.status);
       await saveTokens(response.data.token, response.data.refreshToken);
       return response.data;
     } catch (error: any) {

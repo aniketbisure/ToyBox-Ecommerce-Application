@@ -8,7 +8,6 @@ import { LIGHT_THEME, DARK_THEME } from '../constants/theme';
 
 import AuthStack from './AuthStack';
 import MainTabNavigator from './MainTabNavigator';
-import AdminStack from './AdminStack';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import SplashScreen from '../screens/SplashScreen';
 
@@ -53,12 +52,7 @@ const AppNavigator = () => {
             {(props) => <OnboardingScreen {...props} onComplete={() => setAppState('main')} />}
           </Stack.Screen>
         ) : isAuthenticated ? (
-          <>
-            <Stack.Screen name="Main" component={MainTabNavigator} />
-            {user?.role === 'admin' && (
-              <Stack.Screen name="Admin" component={AdminStack} />
-            )}
-          </>
+          <Stack.Screen name="Main" component={MainTabNavigator} />
         ) : (
           <Stack.Screen name="Auth" component={AuthStack} />
         )}

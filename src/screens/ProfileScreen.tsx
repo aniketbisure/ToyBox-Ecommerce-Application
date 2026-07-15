@@ -1,17 +1,16 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Dimensions } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '../redux/slices/authSlice';
 import { RootState, AppDispatch } from '../redux/store';
-import { COLORS, FONTS, SHADOWS } from '../constants/theme';
+import { COLORS, FONTS, SHADOWS, ThemeColors } from '../constants/theme';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList, ProfileStackNavigationProp } from '../types/navigation';
-import { showToast } from '../utils/toastService';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
 import api from '../api/apiClient';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 
 const { width } = Dimensions.get('window');
 
@@ -20,11 +19,10 @@ const ProfileScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const profileNav = navigation as unknown as ProfileStackNavigationProp;
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles, [insets]);
   const { user = null } = useSelector((state: RootState) => state.auth) || {};
-  const [orderCount, setOrderCount] = useState(0);
-
-  const styles = useMemo(() => createStyles(colors, insets), [colors, insets]);
+  const [, setOrderCount] = useState(0);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -83,13 +81,13 @@ const ProfileScreen = () => {
         <Icon name={option.icon} size={22} color={colors.text} />
       </View>
       <Text style={styles.listItemText}>{option.name}</Text>
-      <Icon name="chevron-right" size={20} color="#888" />
+      <Icon name="chevron-right" size={20} color={colors.gray} />
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      <View style={{ paddingTop: insets.top, backgroundColor: colors.primary }}>
+      <View style={styles.headerWrapper}>
         <View style={styles.header}>
           <Text style={styles.headerGreeting}>Hello, {user?.name || 'User'}</Text>
           <TouchableOpacity onPress={() => profileNav.navigate('Settings')}>
@@ -121,19 +119,6 @@ const ProfileScreen = () => {
           {menuOptions.map(renderOption)}
         </View>
 
-        {user?.role === 'admin' && (
-          <TouchableOpacity
-            style={[styles.listItem, { marginTop: 10, backgroundColor: colors.primary + '10' }]}
-            onPress={() => navigation.navigate('Admin', { screen: 'AdminDashboard' })}
-          >
-            <View style={[styles.iconContainer, { backgroundColor: colors.primary + '20' }]}>
-              <Icon name="view-dashboard-outline" size={22} color={colors.primary} />
-            </View>
-            <Text style={[styles.listItemText, { color: colors.primary, fontWeight: '700' }]}>Admin Dashboard</Text>
-            <Icon name="chevron-right" size={20} color={colors.primary} />
-          </TouchableOpacity>
-        )}
-
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
           <Text style={styles.logoutBtnText}>Sign Out</Text>
         </TouchableOpacity>
@@ -144,8 +129,9 @@ const ProfileScreen = () => {
   );
 };
 
-const createStyles = (colors: any, insets: any) => StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF' },
+const createStyles = (colors: ThemeColors, isDarkMode: boolean, insets: EdgeInsets) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  headerWrapper: { paddingTop: insets.top, backgroundColor: COLORS.primary },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -164,23 +150,23 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
   gridItem: {
     width: (width - 45) / 2,
     height: 48,
-    backgroundColor: '#F0F2F2',
+    backgroundColor: colors.lightGray,
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#D5D9D9',
+    borderColor: colors.border,
   },
-  gridItemText: { fontSize: 14, color: '#111', fontWeight: '400' },
-  section: { padding: 20, borderBottomWidth: 4, borderBottomColor: '#F0F2F2' },
-  sectionTitleLarge: { fontSize: 20, fontWeight: '700', color: '#111', marginBottom: 15 },
+  gridItemText: { fontSize: 14, color: colors.text, fontWeight: '400' },
+  section: { padding: 20, borderBottomWidth: 4, borderBottomColor: colors.lightGray },
+  sectionTitleLarge: { fontSize: 20, fontWeight: '700', color: colors.text, marginBottom: 15 },
   listItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: colors.border,
   },
   iconContainer: {
     width: 38,
@@ -189,19 +175,19 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  listItemText: { flex: 1, fontSize: 15, marginLeft: 15, color: '#111' },
+  listItemText: { flex: 1, fontSize: 15, marginLeft: 15, color: colors.text },
   logoutBtn: {
     margin: 20,
     height: 48,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#D5D9D9',
+    borderColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F0F2F2',
+    backgroundColor: colors.lightGray,
   },
-  logoutBtnText: { fontSize: 15, color: '#111', fontWeight: '500' },
-  versionText: { textAlign: 'center', color: '#888', fontSize: 12, marginTop: 10 },
+  logoutBtnText: { fontSize: 15, color: colors.text, fontWeight: '500' },
+  versionText: { textAlign: 'center', color: colors.gray, fontSize: 12, marginTop: 10 },
 });
 
 export default ProfileScreen;

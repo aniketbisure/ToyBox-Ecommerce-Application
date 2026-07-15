@@ -24,18 +24,30 @@ export default function OrdersPage() {
     }
   };
 
-  const getStatusColor = (isDelivered: boolean) => {
-    return isDelivered
+  const getStatusColor = (order: any) => {
+    if (order.status === 'CANCELLED' || order.status === 'REFUNDED') return "bg-red-100 text-red-600";
+    return order.isDelivered
       ? "bg-green-100 text-green-600"
       : "bg-orange-100 text-orange-600";
   };
 
   const handleDeliver = async (id: string) => {
+    if (!window.confirm("Mark this order as delivered?")) return;
     try {
       await api.put(`/orders/${id}/deliver`);
       fetchOrders();
     } catch (_error) {
       window.alert("Failed to update status");
+    }
+  };
+
+  const handleCancel = async (id: string) => {
+    if (!window.confirm("Are you sure you want to cancel and refund this order?")) return;
+    try {
+      await api.put(`/orders/${id}/cancel`);
+      fetchOrders();
+    } catch (_error: any) {
+      window.alert("Failed to cancel order: " + (_error.response?.data?.message || _error.message));
     }
   };
 
@@ -133,20 +145,28 @@ export default function OrdersPage() {
                 <td className="px-6 lg:px-8 py-4 lg:py-5">
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(
-                      order.isDelivered
+                      order
                     )}`}
                   >
-                    {order.isDelivered ? "Delivered" : "Processing"}
+                    {order.status || (order.isDelivered ? "Delivered" : "Processing")}
                   </span>
                 </td>
-                <td className="px-6 lg:px-8 py-4 lg:py-5 text-right">
-                  {!order.isDelivered && (
-                    <button
-                      onClick={() => handleDeliver(order._id)}
-                      className="px-3 py-1 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 transition-all"
-                    >
-                      Mark Delivered
-                    </button>
+                <td className="px-6 lg:px-8 py-4 lg:py-5 text-right flex justify-end gap-2">
+                  {!order.isDelivered && order.status !== 'CANCELLED' && order.status !== 'REFUNDED' && (
+                    <>
+                      <button
+                        onClick={() => handleDeliver(order._id)}
+                        className="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700 transition-all"
+                      >
+                        Deliver
+                      </button>
+                      <button
+                        onClick={() => handleCancel(order._id)}
+                        className="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-all"
+                      >
+                        Cancel
+                      </button>
+                    </>
                   )}
                 </td>
               </motion.tr>
@@ -172,10 +192,10 @@ export default function OrdersPage() {
               </span>
               <span
                 className={`px-2.5 py-1 rounded-full text-xs font-bold ${getStatusColor(
-                  order.isDelivered
+                  order
                 )}`}
               >
-                {order.isDelivered ? "Delivered" : "Processing"}
+                {order.status || (order.isDelivered ? "Delivered" : "Processing")}
               </span>
             </div>
 
@@ -206,13 +226,21 @@ export default function OrdersPage() {
             </div>
 
             {/* Action */}
-            {!order.isDelivered && (
-              <button
-                onClick={() => handleDeliver(order._id)}
-                className="mt-3 w-full py-2 bg-primary text-white text-xs font-bold rounded-xl hover:bg-primary/90 transition-all"
-              >
-                Mark as Delivered
-              </button>
+            {!order.isDelivered && order.status !== 'CANCELLED' && order.status !== 'REFUNDED' && (
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => handleDeliver(order._id)}
+                  className="flex-1 py-2 bg-green-600 text-white text-xs font-bold rounded-xl hover:bg-green-700 transition-all"
+                >
+                  Mark Delivered
+                </button>
+                <button
+                  onClick={() => handleCancel(order._id)}
+                  className="flex-1 py-2 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700 transition-all"
+                >
+                  Cancel Order
+                </button>
+              </div>
             )}
           </motion.div>
         ))}

@@ -1,8 +1,16 @@
 import { Request, Response } from 'express';
 import AppConfig from '../models/AppConfig';
+import NodeCache from 'node-cache';
+
+const configCache = new NodeCache({ stdTTL: 600 }); // Cache for 10 minutes
 
 export const getConfig = async (req: Request, res: Response) => {
   try {
+    const cachedConfig = configCache.get('app_config');
+    if (cachedConfig) {
+      return res.json(cachedConfig);
+    }
+
     let config = await AppConfig.findOne();
     if (!config) {
       config = await AppConfig.create({
@@ -23,7 +31,13 @@ export const getConfig = async (req: Request, res: Response) => {
       });
     }
 
-    res.json(config);
+    const finalConfig = {
+      ...config.toObject(),
+      razorpayKeyId: process.env.RAZORPAY_KEY_ID
+    };
+
+    configCache.set('app_config', finalConfig);
+    res.json(finalConfig);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching app config', error });
   }
@@ -57,7 +71,11 @@ export const updateConfig = async (req: Request, res: Response) => {
       { $set: update },
       { new: true, upsert: true }
     );
-    res.json(config);
+    configCache.del('app_config');
+    res.json({
+      ...config.toObject(),
+      razorpayKeyId: process.env.RAZORPAY_KEY_ID
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error updating app config', error });
   }
@@ -71,7 +89,11 @@ export const addCategory = async (req: Request, res: Response) => {
       { $addToSet: { categories: name } },
       { new: true, upsert: true }
     );
-    res.json(config);
+    configCache.del('app_config');
+    res.json({
+      ...config.toObject(),
+      razorpayKeyId: process.env.RAZORPAY_KEY_ID
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error adding category', error });
   }
@@ -85,7 +107,11 @@ export const deleteCategory = async (req: Request, res: Response) => {
       { $pull: { categories: name } },
       { new: true }
     );
-    res.json(config);
+    configCache.del('app_config');
+    res.json({
+      ...config.toObject(),
+      razorpayKeyId: process.env.RAZORPAY_KEY_ID
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting category', error });
   }
@@ -99,7 +125,11 @@ export const addBanner = async (req: Request, res: Response) => {
       { $push: { banners: banner } },
       { new: true, upsert: true }
     );
-    res.json(config);
+    configCache.del('app_config');
+    res.json({
+      ...config.toObject(),
+      razorpayKeyId: process.env.RAZORPAY_KEY_ID
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error adding banner', error });
   }
@@ -116,7 +146,11 @@ export const updateBanners = async (req: Request, res: Response) => {
       { $set: { banners } },
       { new: true, upsert: true }
     );
-    res.json(config);
+    configCache.del('app_config');
+    res.json({
+      ...config.toObject(),
+      razorpayKeyId: process.env.RAZORPAY_KEY_ID
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error updating banners', error });
   }
@@ -130,7 +164,11 @@ export const deleteBanner = async (req: Request, res: Response) => {
       { $pull: { banners: { _id: id } } },
       { new: true }
     );
-    res.json(config);
+    configCache.del('app_config');
+    res.json({
+      ...config.toObject(),
+      razorpayKeyId: process.env.RAZORPAY_KEY_ID
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting banner', error });
   }

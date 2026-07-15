@@ -1,28 +1,26 @@
-import React, { useMemo } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
+import React from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../redux/store';
 import {
   removeFromCart,
   updateQuantity,
-  clearCart,
   saveForLater,
   moveToCart,
   removeFromSaved,
   syncCart,
   syncSavedItems
 } from '../redux/slices/cartSlice';
-import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
+import { COLORS, FONTS, SHADOWS, ThemeColors } from '../constants/theme';
 import { showToast } from '../utils/toastService';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import CustomButton from '../components/CustomButton';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../hooks/useTheme';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 
 const CartScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useThemedStyles(createStyles, [insets]);
   const dispatch = useDispatch();
   const { items = [], savedItems = [], totalAmount = 0 } = useSelector((state: RootState) => state.cart) || {};
 
@@ -150,7 +148,7 @@ const CartScreen = ({ navigation }: any) => {
 
   if (items.length === 0 && savedItems.length === 0) {
     return (
-      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+      <View style={styles.containerEmpty}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Icon name="arrow-left" size={28} color={colors.text} />
@@ -178,7 +176,7 @@ const CartScreen = ({ navigation }: any) => {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       <FlatList
         data={items}
         keyExtractor={(item: any) => item.id || item._id}
@@ -222,10 +220,16 @@ const CartScreen = ({ navigation }: any) => {
   );
 };
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean, insets: EdgeInsets) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    paddingTop: insets.top,
+  },
+  containerEmpty: {
+    flex: 1,
+    backgroundColor: colors.background,
+    paddingTop: insets.top,
   },
   header: {
     backgroundColor: colors.card,

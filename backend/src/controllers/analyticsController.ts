@@ -24,7 +24,7 @@ export const getMostViewedProducts = async (req: AuthRequest, res: Response) => 
 
     const products = await Promise.all(
       sortedViews.map(async ([id, count]) => {
-        const product = await Product.findById(id).select('name image price category');
+        const product = await Product.findById(id).select('name image price mainCategory subCategory');
         return { product, viewCount: count };
       })
     );
@@ -56,7 +56,7 @@ export const getMostSavedProducts = async (req: AuthRequest, res: Response) => {
 
     const products = await Promise.all(
       sortedSaves.map(async ([id, count]) => {
-        const product = await Product.findById(id).select('name image price category');
+        const product = await Product.findById(id).select('name image price mainCategory subCategory');
         return { product, saveCount: count };
       })
     );

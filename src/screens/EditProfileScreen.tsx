@@ -1,23 +1,21 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
-import { COLORS, FONTS, SHADOWS } from '../constants/theme';
-import { moderateScale } from '../utils/responsive';
+import { COLORS, FONTS, SHADOWS, ThemeColors } from '../constants/theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store';
 import { getProfile } from '../redux/slices/authSlice';
 import apiClient from '../api/apiClient';
 import { showToast } from '../utils/toastService';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 
 const EditProfileScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles, [insets]);
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
-
-  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -67,7 +65,7 @@ const EditProfileScreen = ({ navigation }: any) => {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
@@ -80,9 +78,9 @@ const EditProfileScreen = ({ navigation }: any) => {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: colors.text }]}>Full Name</Text>
+          <Text style={styles.label}>Full Name</Text>
           <TextInput
-            style={[styles.input, { color: colors.text }]}
+            style={styles.input}
             placeholder="Full Name"
             placeholderTextColor={colors.gray}
             value={formData.name}
@@ -91,9 +89,9 @@ const EditProfileScreen = ({ navigation }: any) => {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: colors.text }]}>Email Address</Text>
+          <Text style={styles.label}>Email Address</Text>
           <TextInput
-            style={[styles.input, { color: colors.text }]}
+            style={styles.input}
             placeholder="Email Address"
             placeholderTextColor={colors.gray}
             value={formData.email}
@@ -103,11 +101,11 @@ const EditProfileScreen = ({ navigation }: any) => {
           />
         </View>
 
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Phone Numbers</Text>
+        <Text style={styles.sectionTitle}>Phone Numbers</Text>
 
         {formData.phoneNumbers.map((phone, index) => (
           <View key={index} style={styles.phoneRow}>
-            <Text style={[styles.phoneText, { color: colors.text }]}>{phone}</Text>
+            <Text style={styles.phoneText}>{phone}</Text>
             <TouchableOpacity onPress={() => removePhone(index)}>
               <Icon name="delete-outline" size={20} color={COLORS.error} />
             </TouchableOpacity>
@@ -116,7 +114,7 @@ const EditProfileScreen = ({ navigation }: any) => {
 
         <View style={styles.addPhoneContainer}>
           <TextInput
-            style={[styles.input, { flex: 1, marginBottom: 0, marginRight: 10, color: colors.text }]}
+            style={[styles.input, { flex: 1, marginBottom: 0, marginRight: 10 }]}
             placeholder="Add new phone..."
             placeholderTextColor={colors.gray}
             value={newPhone}
@@ -149,7 +147,7 @@ const EditProfileScreen = ({ navigation }: any) => {
   );
 };
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean, insets: EdgeInsets) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: 'row',
@@ -174,11 +172,11 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   content: { padding: 20 },
   inputGroup: { marginBottom: 20 },
-  label: { ...FONTS.body, fontWeight: '700', marginBottom: 8, fontSize: 14 },
-  sectionTitle: { ...FONTS.h3, marginTop: 10, marginBottom: 15 },
-  input: { backgroundColor: colors.card, borderRadius: 12, paddingHorizontal: 15, height: 55, ...FONTS.body, ...SHADOWS.light },
+  label: { ...FONTS.body, fontWeight: '700', marginBottom: 8, fontSize: 14, color: colors.text },
+  sectionTitle: { ...FONTS.h3, marginTop: 10, marginBottom: 15, color: colors.text },
+  input: { backgroundColor: colors.card, borderRadius: 12, paddingHorizontal: 15, height: 55, ...FONTS.body, color: colors.text, ...SHADOWS.light },
   phoneRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: colors.card, padding: 15, borderRadius: 12, marginBottom: 10, ...SHADOWS.light },
-  phoneText: { ...FONTS.body },
+  phoneText: { ...FONTS.body, color: colors.text },
   addPhoneContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
   addBtn: { backgroundColor: COLORS.primary, height: 55, width: 55, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   manageAddressBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.primary + '10', padding: 15, borderRadius: 12, marginTop: 10, marginBottom: 20 },

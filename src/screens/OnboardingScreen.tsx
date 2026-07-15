@@ -6,13 +6,13 @@ import {
   FlatList,
   TouchableOpacity,
   Dimensions,
-  Image,
   Animated
 } from 'react-native';
-import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
-import { moderateScale, verticalScale } from '../utils/responsive';
+import { COLORS, FONTS, SHADOWS, ThemeColors } from '../constants/theme';
+import { moderateScale } from '../utils/responsive';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 
 const { width, height } = Dimensions.get('window');
 
@@ -41,6 +41,8 @@ const slides = [
 ];
 
 const OnboardingScreen = ({ navigation, onComplete }: any) => {
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<any>(null);
@@ -147,10 +149,10 @@ const OnboardingScreen = ({ navigation, onComplete }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.background,
   },
   skipBtn: {
     position: 'absolute',
@@ -160,7 +162,7 @@ const styles = StyleSheet.create({
   },
   skipText: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
     fontWeight: '700',
   },
   slide: {
@@ -185,11 +187,12 @@ const styles = StyleSheet.create({
     fontSize: 28,
     textAlign: 'center',
     marginBottom: 15,
+    color: colors.text,
   },
   description: {
     ...FONTS.body,
     textAlign: 'center',
-    color: COLORS.gray,
+    color: colors.gray,
     lineHeight: 24,
   },
   footer: {
@@ -206,7 +209,7 @@ const styles = StyleSheet.create({
   indicator: {
     height: 8,
     width: 8,
-    backgroundColor: COLORS.lightGray,
+    backgroundColor: colors.lightGray,
     marginHorizontal: 3,
     borderRadius: 4,
   },

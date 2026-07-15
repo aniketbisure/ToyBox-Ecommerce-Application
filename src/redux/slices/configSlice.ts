@@ -17,6 +17,7 @@ interface ConfigState {
   banners: Banner[];
   categories: string[];
   ageRanges: any[];
+  razorpayKeyId?: string;
   settings: {
     notificationsEnabled: boolean;
     darkMode: boolean;
@@ -75,6 +76,7 @@ const configSlice = createSlice({
         state.banners = mappedBanners.filter((b: any) => b.isActive);
         state.categories = action.payload.categories || [];
         state.ageRanges = action.payload.ageRanges || [];
+        state.razorpayKeyId = action.payload.razorpayKeyId;
       })
       .addCase(fetchAppConfig.rejected, (state) => {
         state.loading = false;

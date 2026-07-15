@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,59 +11,48 @@ import {
   ScrollView,
   RefreshControl,
   StatusBar,
-  Modal,
-  Animated,
-  Platform
+  Animated
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducts, clearRecentlyViewed } from '../redux/slices/productSlice';
+import { fetchProducts } from '../redux/slices/productSlice';
 import { fetchAppConfig } from '../redux/slices/configSlice';
 import { AppDispatch, RootState } from '../redux/store';
-import { COLORS, FONTS, SHADOWS, SIZES } from '../constants/theme';
-import { moderateScale } from '../utils/responsive';
+import { COLORS, FONTS, SHADOWS, ThemeColors } from '../constants/theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
 import { showToast } from '../utils/toastService';
 import { Product, Banner, User } from '../types';
-import HomeHeader from '../components/home/HomeHeader';
 import BannerCarousel from '../components/home/BannerCarousel';
 import ProductCard from '../components/ProductCard';
 import Logo from '../components/common/Logo';
 import { addToCart } from '../redux/slices/cartSlice';
 import { toggleWishlist } from '../redux/slices/wishlistSlice';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 
 const { width } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation, route }: any) => {
   const insets = useSafeAreaInsets();
-  const { colors, isDarkMode } = useTheme();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles, [insets]);
   const dispatch = useDispatch<AppDispatch>();
 
-  // All Hooks at the top
   const user = useSelector((state: RootState) => state.auth?.user) as User | null;
   const { products = [], recentlyViewed = [] } = useSelector((state: RootState) => state.products) || {};
-  const { banners = [], categories = [] } = useSelector((state: RootState) => state.config) || {};
+  const { banners = [] } = useSelector((state: RootState) => state.config) || {};
   const cartItems = useSelector((state: RootState) => state.cart?.items ?? []);
   const wishlistItems = useSelector((state: RootState) => state.wishlist?.items ?? []);
 
   const [refreshing, setRefreshing] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [activeCategory] = useState<string>('All');
   const [displayProducts, setDisplayProducts] = useState<Product[]>(products);
 
   const scrollY = useRef(new Animated.Value(0)).current;
-
   const filterParams = route.params;
 
   useEffect(() => {
-    let filtered = products;
-    if (activeCategory !== 'All') {
-      filtered = products.filter(p => p.category?.toLowerCase() === activeCategory.toLowerCase());
-    }
-    setDisplayProducts(filtered);
+    setDisplayProducts(products);
   }, [products, activeCategory]);
-
-  const styles = useMemo(() => createStyles(colors, insets), [colors, insets]);
 
   const loadData = useCallback(async () => {
     dispatch(fetchProducts(filterParams));
@@ -89,7 +78,7 @@ const HomeScreen = ({ navigation, route }: any) => {
 
   useEffect(() => {
     loadData();
-  }, [dispatch]);
+  }, [dispatch, loadData]);
 
   const isWishlisted = useCallback((id: string) => wishlistItems.some(item => (item.id || (item as any)._id) === id), [wishlistItems]);
 
@@ -129,7 +118,7 @@ const HomeScreen = ({ navigation, route }: any) => {
         >
           <Icon name="map-marker-outline" size={18} color={COLORS.white} />
           <Text style={styles.locationText} numberOfLines={1}>
-            Deliver to {user?.name || 'Guest'} - {user?.address?.city || 'Set Location'}
+            Deliver to {user?.name || 'Guest'} - {user?.addresses?.[0]?.city || 'Set Location'}
           </Text>
           <Icon name="chevron-down" size={16} color={COLORS.white} />
         </TouchableOpacity>
@@ -221,7 +210,7 @@ const HomeScreen = ({ navigation, route }: any) => {
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }
         )}
-        data={products}
+        data={displayProducts}
         keyExtractor={(item, index) => item.id || index.toString()}
         renderItem={renderProductItem}
         numColumns={2}
@@ -245,7 +234,7 @@ const HomeScreen = ({ navigation, route }: any) => {
   );
 };
 
-const createStyles = (colors: any, insets: any) => StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean, insets: EdgeInsets) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -294,9 +283,6 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
     fontSize: 15,
     color: '#333',
     paddingVertical: 0,
-  },
-  cameraIcon: {
-    marginLeft: 8,
   },
   cartBadge: {
     position: 'absolute',
@@ -353,7 +339,9 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   catIconText: {
     fontSize: 12,

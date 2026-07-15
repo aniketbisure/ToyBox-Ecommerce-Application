@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,28 +7,23 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
-  Modal,
-  TextInput,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
   Alert
 } from 'react-native';
-import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
+import { COLORS, FONTS, SHADOWS, ThemeColors } from '../constants/theme';
 import { moderateScale } from '../utils/responsive';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 import apiClient from '../api/apiClient';
 import { showToast } from '../utils/toastService';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 import { Order } from '../types';
 
 const MyOrdersScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, isDarkMode } = useTheme();
+  const styles = useThemedStyles(createStyles, [insets]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -71,24 +66,37 @@ const MyOrdersScreen = ({ navigation }: any) => {
     );
   };
 
-  const StatusTimeline = ({ delivered }: { delivered: boolean }) => (
-    <View style={styles.timelineContainer}>
-      <View style={styles.timelineItem}>
-        <View style={[styles.timelineDot, { backgroundColor: colors.success }]} />
-        <Text style={styles.timelineText}>Placed</Text>
+  const StatusTimeline = ({ status, delivered }: { status: string, delivered: boolean }) => {
+    if (status === 'CANCELLED' || status === 'REFUNDED') {
+      return (
+        <View style={[styles.timelineContainer, { justifyContent: 'center' }]}>
+          <Icon name="cancel" size={16} color={COLORS.error} style={{marginRight: 5}} />
+          <Text style={[styles.timelineText, { color: COLORS.error, fontSize: 12 }]}>
+            Order {status}
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.timelineContainer}>
+        <View style={styles.timelineItem}>
+          <View style={[styles.timelineDot, { backgroundColor: COLORS.success }]} />
+          <Text style={styles.timelineText}>Placed</Text>
+        </View>
+        <View style={[styles.timelineLine, { backgroundColor: COLORS.success }]} />
+        <View style={styles.timelineItem}>
+          <View style={[styles.timelineDot, { backgroundColor: (status === 'PAID' || status === 'SHIPPED' || delivered) ? COLORS.success : colors.lightGray }]} />
+          <Text style={styles.timelineText}>Packed</Text>
+        </View>
+        <View style={[styles.timelineLine, { backgroundColor: (status === 'SHIPPED' || delivered) ? COLORS.success : colors.lightGray }]} />
+        <View style={styles.timelineItem}>
+          <View style={[styles.timelineDot, { backgroundColor: delivered ? COLORS.success : colors.lightGray }]} />
+          <Text style={styles.timelineText}>Shipped</Text>
+        </View>
       </View>
-      <View style={[styles.timelineLine, { backgroundColor: colors.success }]} />
-      <View style={styles.timelineItem}>
-        <View style={[styles.timelineDot, { backgroundColor: colors.success }]} />
-        <Text style={styles.timelineText}>Packed</Text>
-      </View>
-      <View style={[styles.timelineLine, { backgroundColor: delivered ? colors.success : colors.lightGray }]} />
-      <View style={styles.timelineItem}>
-        <View style={[styles.timelineDot, { backgroundColor: delivered ? colors.success : colors.lightGray }]} />
-        <Text style={styles.timelineText}>Shipped</Text>
-      </View>
-    </View>
-  );
+    );
+  };
 
   const handleBuyAgain = (item: Order) => {
     item.orderItems.forEach(prod => {
@@ -111,14 +119,28 @@ const MyOrdersScreen = ({ navigation }: any) => {
           <Text style={styles.orderId}>Order #{item._id.substring(item._id.length - 8).toUpperCase()}</Text>
           <Text style={styles.dateText}>{new Date(item.createdAt).toLocaleDateString()}</Text>
         </View>
-        <View style={[styles.statusBadge, { backgroundColor: item.isDelivered ? (colors.isDarkMode ? '#1B5E20' : '#E8F5E9') : (colors.isDarkMode ? '#E65100' : '#FFF3E0') }]}>
-          <Text style={[styles.statusText, { color: item.isDelivered ? (colors.isDarkMode ? '#81C784' : '#2E7D32') : (colors.isDarkMode ? '#FFB74D' : '#EF6C00') }]}>
-            {item.isDelivered ? 'Delivered' : 'Processing'}
+        <View style={[styles.statusBadge, {
+          backgroundColor:
+            item.status === 'CANCELLED' || item.status === 'REFUNDED'
+              ? (isDarkMode ? '#B71C1C' : '#FFEBEE')
+              : item.isDelivered
+                ? (isDarkMode ? '#1B5E20' : '#E8F5E9')
+                : (isDarkMode ? '#E65100' : '#FFF3E0')
+        }]}>
+          <Text style={[styles.statusText, {
+            color:
+              item.status === 'CANCELLED' || item.status === 'REFUNDED'
+                ? (isDarkMode ? '#EF9A9A' : '#C62828')
+                : item.isDelivered
+                  ? (isDarkMode ? '#81C784' : '#2E7D32')
+                  : (isDarkMode ? '#FFB74D' : '#EF6C00')
+          }]}>
+            {item.status || (item.isDelivered ? 'Delivered' : 'Processing')}
           </Text>
         </View>
       </View>
 
-      <StatusTimeline delivered={item.isDelivered} />
+      <StatusTimeline status={item.status} delivered={item.isDelivered} />
 
       <View style={styles.divider} />
 
@@ -152,7 +174,7 @@ const MyOrdersScreen = ({ navigation }: any) => {
             <Text style={styles.buyAgainBtn}>Buy Again</Text>
           </TouchableOpacity>
         </View>
-        {!item.isDelivered && (
+        {!item.isDelivered && item.status !== 'CANCELLED' && item.status !== 'REFUNDED' && (
           <TouchableOpacity onPress={() => handleCancelOrder(item._id)}>
             <Text style={styles.cancelText}>Cancel Order</Text>
           </TouchableOpacity>
@@ -162,7 +184,7 @@ const MyOrdersScreen = ({ navigation }: any) => {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Icon name="arrow-left" size={28} color={colors.text} />
@@ -198,7 +220,7 @@ const MyOrdersScreen = ({ navigation }: any) => {
   );
 };
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean, insets: EdgeInsets) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -384,62 +406,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderRadius: 15,
   },
   shopBtnText: {
-    ...FONTS.h3,
-    color: COLORS.white,
-  },
-  // Modal Styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    padding: 20,
-    maxHeight: '80%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  modalTitle: {
-    ...FONTS.h2,
-    fontSize: 18,
-    color: colors.text,
-  },
-  inputGroup: {
-    marginBottom: 15,
-  },
-  label: {
-    ...FONTS.body,
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 5,
-    color: colors.text,
-  },
-  input: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    height: 50,
-    borderWidth: 1,
-    borderColor: colors.lightGray,
-    color: colors.text,
-  },
-  updateBtn: {
-    backgroundColor: COLORS.primary,
-    height: 55,
-    borderRadius: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  updateBtnText: {
     ...FONTS.h3,
     color: COLORS.white,
   }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Switch, ScrollView, Alert } from 'react-native';
-import { COLORS, FONTS, SHADOWS } from '../constants/theme';
+import { COLORS, FONTS, SHADOWS, ThemeColors } from '../constants/theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -10,12 +10,13 @@ import { logoutUser } from '../redux/slices/authSlice';
 import { showToast } from '../utils/toastService';
 import apiClient from '../api/apiClient';
 
-import { useTheme } from '../hooks/useTheme';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 
 const SettingsScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch<AppDispatch>();
   const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const { settings } = useSelector((state: RootState) => state.config);
 
   const handleToggleNotifications = () => {
@@ -56,10 +57,8 @@ const SettingsScreen = ({ navigation }: any) => {
     { name: 'Dark Mode', icon: 'weather-night', value: settings.darkMode, toggle: handleToggleDarkMode },
   ];
 
-  const styles = createStyles(colors);
-
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Icon name="arrow-left" size={28} color={colors.text} />
@@ -93,7 +92,7 @@ const SettingsScreen = ({ navigation }: any) => {
   );
 };
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: 'row',
@@ -116,7 +115,16 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 20,
     color: colors.text,
   },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.card, padding: 15, borderRadius: 12, marginBottom: 10, ...SHADOWS.light },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.card,
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 10,
+    ...SHADOWS.light
+  },
   name: { ...FONTS.body, marginLeft: 15, fontWeight: '600', color: colors.text },
   dangerRow: { flexDirection: 'row', alignItems: 'center', marginTop: 20, padding: 15 },
   dangerText: { ...FONTS.body, color: colors.error, marginLeft: 15, fontWeight: '600' }

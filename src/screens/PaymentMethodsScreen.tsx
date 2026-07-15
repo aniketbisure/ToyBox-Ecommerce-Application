@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,10 +13,10 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { COLORS, FONTS, SHADOWS } from '../constants/theme';
+import { COLORS, FONTS, SHADOWS, ThemeColors } from '../constants/theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../hooks/useTheme';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 import { showToast } from '../utils/toastService';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store';
@@ -34,7 +34,7 @@ interface Card {
 const PaymentMethodsScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useThemedStyles(createStyles, [insets]);
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
 
@@ -110,13 +110,13 @@ const PaymentMethodsScreen = ({ navigation }: any) => {
   };
 
   const renderCard = ({ item }: { item: Card }) => (
-    <View style={[styles.cardItem, { backgroundColor: colors.card }]}>
+    <View style={styles.cardItem}>
       <View style={styles.cardInfo}>
         <View style={[styles.cardIcon, { backgroundColor: item.type === 'visa' ? '#1A1F71' : '#EB001B' }]}>
           <Icon name={item.type === 'visa' ? 'visa' : 'mastercard'} size={24} color="#FFF" />
         </View>
         <View style={{ marginLeft: 15 }}>
-          <Text style={[styles.cardNumber, { color: colors.text }]}>{item.number}</Text>
+          <Text style={styles.cardNumber}>{item.number}</Text>
           <Text style={styles.cardHolder}>{item.holder.toUpperCase()}</Text>
         </View>
       </View>
@@ -127,7 +127,7 @@ const PaymentMethodsScreen = ({ navigation }: any) => {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Icon name="arrow-left" size={28} color={colors.text} />
@@ -146,7 +146,7 @@ const PaymentMethodsScreen = ({ navigation }: any) => {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Icon name="credit-card-plus-outline" size={80} color={colors.lightGray} />
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>No Saved Cards</Text>
+            <Text style={styles.emptyTitle}>No Saved Cards</Text>
             <Text style={styles.emptySubtitle}>
               You haven't saved any payment methods yet. You can add them here for faster checkout.
             </Text>
@@ -159,7 +159,7 @@ const PaymentMethodsScreen = ({ navigation }: any) => {
         ListFooterComponent={
           cards.length > 0 ? (
             <View style={styles.infoSection}>
-              <Text style={[styles.infoTitle, { color: colors.text }]}>Secure Payments</Text>
+              <Text style={styles.infoTitle}>Secure Payments</Text>
               <View style={styles.infoRow}>
                 <Icon name="shield-check" size={20} color={COLORS.success} />
                 <Text style={styles.infoText}>Your payment information is encrypted and secure.</Text>
@@ -173,10 +173,10 @@ const PaymentMethodsScreen = ({ navigation }: any) => {
         <View style={styles.modalOverlay}>
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={[styles.modalContent, { backgroundColor: colors.background }]}
+            style={styles.modalContent}
           >
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.text }]}>Add New Card</Text>
+              <Text style={styles.modalTitle}>Add New Card</Text>
               <TouchableOpacity onPress={() => setShowModal(false)}>
                 <Icon name="close" size={24} color={colors.text} />
               </TouchableOpacity>
@@ -184,9 +184,9 @@ const PaymentMethodsScreen = ({ navigation }: any) => {
 
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: colors.text }]}>Card Number</Text>
+                <Text style={styles.label}>Card Number</Text>
                 <TextInput
-                  style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+                  style={styles.input}
                   placeholder="0000 0000 0000 0000"
                   placeholderTextColor={colors.gray}
                   keyboardType="numeric"
@@ -197,9 +197,9 @@ const PaymentMethodsScreen = ({ navigation }: any) => {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: colors.text }]}>Card Holder Name</Text>
+                <Text style={styles.label}>Card Holder Name</Text>
                 <TextInput
-                  style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+                  style={styles.input}
                   placeholder="John Doe"
                   placeholderTextColor={colors.gray}
                   autoCapitalize="characters"
@@ -210,9 +210,9 @@ const PaymentMethodsScreen = ({ navigation }: any) => {
 
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <View style={[styles.inputGroup, { width: '48%' }]}>
-                  <Text style={[styles.label, { color: colors.text }]}>Expiry Date</Text>
+                  <Text style={styles.label}>Expiry Date</Text>
                   <TextInput
-                    style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+                    style={styles.input}
                     placeholder="MM/YY"
                     placeholderTextColor={colors.gray}
                     maxLength={5}
@@ -221,9 +221,9 @@ const PaymentMethodsScreen = ({ navigation }: any) => {
                   />
                 </View>
                 <View style={[styles.inputGroup, { width: '48%' }]}>
-                  <Text style={[styles.label, { color: colors.text }]}>CVV</Text>
+                  <Text style={styles.label}>CVV</Text>
                   <TextInput
-                    style={[styles.input, { backgroundColor: colors.card, color: colors.text }]}
+                    style={styles.input}
                     placeholder="123"
                     placeholderTextColor={colors.gray}
                     keyboardType="numeric"
@@ -246,8 +246,8 @@ const PaymentMethodsScreen = ({ navigation }: any) => {
   );
 };
 
-const createStyles = (colors: any) => StyleSheet.create({
-  container: { flex: 1 },
+const createStyles = (colors: ThemeColors, isDarkMode: boolean, insets: EdgeInsets) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -276,28 +276,29 @@ const createStyles = (colors: any) => StyleSheet.create({
     padding: 15,
     borderRadius: 15,
     marginBottom: 15,
+    backgroundColor: colors.card,
     ...SHADOWS.light,
   },
   cardInfo: { flexDirection: 'row', alignItems: 'center' },
   cardIcon: { width: 40, height: 25, borderRadius: 4, justifyContent: 'center', alignItems: 'center' },
-  cardNumber: { fontSize: 16, fontWeight: '700' },
+  cardNumber: { fontSize: 16, fontWeight: '700', color: colors.text },
   cardHolder: { fontSize: 12, color: COLORS.gray, marginTop: 2 },
   emptyContainer: { alignItems: 'center', marginTop: 40, padding: 20 },
-  emptyTitle: { ...FONTS.h2, marginTop: 20 },
+  emptyTitle: { ...FONTS.h2, marginTop: 20, color: colors.text },
   emptySubtitle: { ...FONTS.body, textAlign: 'center', color: COLORS.gray, marginTop: 10, lineHeight: 22 },
   addBtn: { backgroundColor: COLORS.primary, paddingHorizontal: 30, paddingVertical: 15, borderRadius: 15, marginTop: 30 },
   addBtnText: { color: COLORS.white, fontWeight: '700' },
-  infoSection: { marginTop: 20, borderTopWidth: 1, borderTopColor: '#EEE', paddingTop: 20 },
-  infoTitle: { ...FONTS.h3, marginBottom: 10 },
+  infoSection: { marginTop: 20, borderTopWidth: 1, borderTopColor: colors.lightGray, paddingTop: 20 },
+  infoTitle: { ...FONTS.h3, marginBottom: 10, color: colors.text },
   infoRow: { flexDirection: 'row', alignItems: 'center' },
   infoText: { marginLeft: 10, ...FONTS.body, fontSize: 13, color: COLORS.gray },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 20, maxHeight: '80%' },
+  modalContent: { borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 20, maxHeight: '80%', backgroundColor: colors.background },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  modalTitle: { ...FONTS.h2, fontSize: 18 },
+  modalTitle: { ...FONTS.h2, fontSize: 18, color: colors.text },
   inputGroup: { marginBottom: 20 },
-  label: { ...FONTS.body, fontWeight: '700', marginBottom: 8, fontSize: 14 },
-  input: { borderRadius: 12, paddingHorizontal: 15, height: 50, ...FONTS.body, borderWidth: 1, borderColor: '#DDD' },
+  label: { ...FONTS.body, fontWeight: '700', marginBottom: 8, fontSize: 14, color: colors.text },
+  input: { borderRadius: 12, paddingHorizontal: 15, height: 50, ...FONTS.body, borderWidth: 1, borderColor: colors.lightGray, backgroundColor: colors.card, color: colors.text },
   saveBtn: {
     backgroundColor: COLORS.primary,
     height: 55,

@@ -1,10 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, BackHandler, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
+import { COLORS, FONTS, SIZES, ThemeColors } from '../constants/theme';
 import CustomButton from '../components/CustomButton';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 
 const OrderSuccessScreen = ({ navigation }: any) => {
+  const { isDarkMode } = useTheme();
+  const styles = useThemedStyles(createStyles);
   const scaleAnim = useRef(new Animated.Value(0)).current;
 
   const handleContinueShopping = () => {
@@ -44,7 +47,7 @@ const OrderSuccessScreen = ({ navigation }: any) => {
     );
 
     return () => backHandler.remove();
-  }, [navigation]);
+  }, [navigation, scaleAnim]);
 
   return (
     <View style={styles.container}>
@@ -89,10 +92,10 @@ const OrderSuccessScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.background,
     justifyContent: 'center',
     paddingHorizontal: 25,
   },
@@ -103,29 +106,32 @@ const styles = StyleSheet.create({
     width: 150,
     height: 150,
     borderRadius: 75,
-    backgroundColor: '#F0FFF4',
+    backgroundColor: isDarkMode ? '#1B2C1E' : '#F0FFF4',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 30,
   },
   title: {
     ...FONTS.h1,
+    color: colors.text,
     textAlign: 'center',
     marginBottom: 15,
   },
   subtitle: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
     textAlign: 'center',
     marginBottom: 40,
     lineHeight: 22,
   },
   orderCard: {
     width: '100%',
-    backgroundColor: COLORS.lightGray,
+    backgroundColor: colors.card,
     borderRadius: SIZES.radius,
     padding: 20,
     marginBottom: 40,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   orderRow: {
     flexDirection: 'row',
@@ -134,15 +140,16 @@ const styles = StyleSheet.create({
   },
   orderLabel: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
   },
   orderValue: {
     ...FONTS.h3,
+    color: colors.text,
     fontSize: 16,
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: colors.border,
     marginVertical: 15,
   },
   btn: {

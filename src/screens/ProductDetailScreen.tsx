@@ -1,44 +1,36 @@
-import React, { useState, useRef, useMemo } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Platform, Alert, FlatList, Modal, Share, TextInput, StatusBar } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Share, FlatList, StatusBar } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, syncCart } from '../redux/slices/cartSlice';
-import { toggleWishlist, syncWishlist } from '../redux/slices/wishlistSlice';
+import { toggleWishlist, syncWishlist, setWishlist } from '../redux/slices/wishlistSlice';
 import { addToRecentlyViewed, syncRecentlyViewed } from '../redux/slices/productSlice';
 import { RootState, AppDispatch } from '../redux/store';
-import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
-import { moderateScale, verticalScale } from '../utils/responsive';
+import { COLORS, FONTS, SIZES, SHADOWS, ThemeColors } from '../constants/theme';
 import { showToast } from '../utils/toastService';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CustomButton from '../components/CustomButton';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
 import api from '../api/apiClient';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 
 const { width } = Dimensions.get('window');
 
 const ProductDetailScreen = ({ route, navigation }: any) => {
   const insets = useSafeAreaInsets();
   const { colors, isDarkMode } = useTheme();
-  const styles = useMemo(() => createStyles(colors, insets), [colors, insets]);
+  const styles = useThemedStyles(createStyles, [insets]);
   const { product: initialProduct } = route.params;
   const [product, setProduct] = useState(initialProduct);
   const dispatch = useDispatch<AppDispatch>();
   const wishlistItems = useSelector((state: RootState) => state.wishlist?.items ?? []);
   const cartItems = useSelector((state: RootState) => state.cart?.items ?? []);
-  const { isAuthenticated = false, user = null } = useSelector((state: RootState) => state.auth) || {};
+  const { isAuthenticated = false } = useSelector((state: RootState) => state.auth) || {};
   const flatListRef = useRef<FlatList>(null);
 
   const isWishlisted = wishlistItems.some(item => (item.id || (item as any)._id) === (product.id || product._id));
 
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [isFullScreen, setIsFullScreen] = useState(false);
-
-  // Review State
-  const [showReviewModal, setShowReviewModal] = useState(false);
-  const [userRating, setUserRating] = useState(5);
-  const [userComment, setUserComment] = useState('');
-  const [submittingReview, setSubmittingReview] = useState(false);
 
   const { recentlyViewed = [] } = useSelector((state: RootState) => state.products) || {};
 
@@ -65,13 +57,26 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
 
   const images = product.images && product.images.length > 0 ? product.images : [product.image];
 
-  const handleToggleWishlist = () => {
+  const handleToggleWishlist = async () => {
+    const previousWishlist = [...wishlistItems];
     dispatch(toggleWishlist(product));
+
     if (isAuthenticated) {
-      const nextWishlist = isWishlisted
-        ? wishlistItems.filter(item => item.id !== (product.id || product._id))
-        : [...wishlistItems, product];
-      dispatch(syncWishlist(nextWishlist));
+      try {
+        const nextWishlist = isWishlisted
+          ? wishlistItems.filter(item => item.id !== (product.id || product._id))
+          : [...wishlistItems, product];
+
+        const resultAction = await dispatch(syncWishlist(nextWishlist));
+
+        if (syncWishlist.rejected.match(resultAction)) {
+          throw new Error('Sync failed');
+        }
+      } catch (err) {
+        // Rollback UI state if server sync fails
+        dispatch(setWishlist(previousWishlist));
+        showToast('Failed to sync wishlist. Reverting...', 'error');
+      }
     }
   };
 
@@ -192,9 +197,9 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
               <Text style={styles.deliveryDate}>FREE delivery by <Text style={{fontWeight: '700'}}>Tomorrow</Text></Text>
             </View>
             <View style={[styles.deliveryRow, { marginTop: 8 }]}>
-              <Icon name="map-marker-outline" size={18} color={COLORS.gray} />
+              <Icon name="map-marker-outline" size={18} color={colors.gray} />
               <Text style={styles.deliveryLocation} numberOfLines={1}>
-                Deliver to {user?.name || 'Guest'} - {user?.addresses && user.addresses.length > 0 ? user.addresses[0].city : 'Set Location'}
+                Deliver to {isAuthenticated ? 'you' : 'Guest'}
               </Text>
             </View>
           </View>
@@ -231,21 +236,6 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
 
         <View style={styles.divider} />
 
-        {/* Bullet Points */}
-        {product.bulletPoints && product.bulletPoints.length > 0 && (
-          <View style={styles.bulletSection}>
-            <Text style={styles.sectionTitle}>About this item</Text>
-            {product.bulletPoints.map((point: string, index: number) => (
-              <View key={index} style={styles.bulletRow}>
-                <View style={styles.bulletDot} />
-                <Text style={styles.bulletText}>{point}</Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {product.bulletPoints && product.bulletPoints.length > 0 && <View style={styles.divider} />}
-
         {/* Description */}
         <View style={styles.descriptionSection}>
           <Text style={styles.sectionTitle}>Product Description</Text>
@@ -260,16 +250,8 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
           <View style={styles.specsTable}>
             {[
               { label: 'Brand', value: product.brand },
-              { label: 'Manufacturer', value: product.manufacturer },
-              { label: 'Model Number', value: product.modelNumber },
               { label: 'Sub-Category', value: product.subCategory },
-              { label: 'Age Range', value: product.ageRangeDescription },
               { label: 'Material', value: product.materialType },
-              { label: 'Country of Origin', value: product.countryOfOrigin },
-              { label: 'Minimum Age', value: product.minimumAge ? `${product.minimumAge} Months` : null },
-              { label: 'Item Weight', value: product.weight?.value ? `${product.weight.value} ${product.weight.unit}` : null },
-              { label: 'Product Dimensions', value: product.dimensions?.length ? `${product.dimensions.length} x ${product.dimensions.width} x ${product.dimensions.height} ${product.dimensions.unit}` : null },
-              { label: 'Batteries Required', value: product.batteriesRequired ? `Yes (${product.batteryType})` : 'No' },
               { label: 'SKU', value: product.sku },
             ].filter(s => s.value).map((spec, index) => (
               <View key={index} style={[styles.specRow, index % 2 === 0 && styles.specRowEven]}>
@@ -289,49 +271,12 @@ const ProductDetailScreen = ({ route, navigation }: any) => {
             <Text style={styles.safetyText}>{product.safetyWarningText || 'CHOKING HAZARD – Small parts. Not for children under 3 yrs.'}</Text>
           </View>
         )}
-
-        <View style={styles.divider} />
-
-        {/* Reviews */}
-        <View style={styles.reviewSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Customer Reviews</Text>
-            <TouchableOpacity onPress={() => setShowReviewModal(true)}>
-              <Text style={styles.writeReviewLink}>Rate Product</Text>
-            </TouchableOpacity>
-          </View>
-
-          {product.reviews?.length > 0 ? (
-            product.reviews.map((review: any, i: number) => (
-              <View key={i} style={styles.reviewCard}>
-                <View style={styles.userRow}>
-                  <View style={styles.userAvatarBg}>
-                    <Text style={styles.avatarText}>{review.name.charAt(0)}</Text>
-                  </View>
-                  <View>
-                    <Text style={styles.userName}>{review.name}</Text>
-                    <View style={styles.reviewRatingRow}>
-                      {[1,2,3,4,5].map(s => <Icon key={s} name="star" size={14} color={s <= review.rating ? COLORS.accent : COLORS.lightGray} />)}
-                    </View>
-                  </View>
-                </View>
-                <Text style={styles.reviewComment}>{review.comment}</Text>
-              </View>
-            ))
-          ) : (
-            <View style={styles.emptyReviews}>
-              <Icon name="message-draw" size={40} color={COLORS.lightGray} />
-              <Text style={styles.noReviews}>Be the first to review this product!</Text>
-            </View>
-          )}
-        </View>
       </ScrollView>
     </View>
-
   );
 };
 
-const createStyles = (colors: any, insets: any) => StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean, insets: EdgeInsets) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: 'row',
@@ -351,7 +296,7 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: isDarkMode ? 'rgba(30,30,30,0.9)' : 'rgba(255,255,255,0.9)',
     justifyContent: 'center',
     alignItems: 'center',
     ...SHADOWS.light,
@@ -361,7 +306,7 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
     color: colors.text,
     flex: 1,
     textAlign: 'center',
-    opacity: 0, // Hidden by default, can be shown on scroll
+    opacity: 0,
   },
   headerRight: { flexDirection: 'row', gap: 10 },
   scrollContent: { paddingBottom: 150 },
@@ -369,7 +314,7 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
   imageGallery: {
     width: width,
     height: width * 1.1,
-    backgroundColor: COLORS.white,
+    backgroundColor: isDarkMode ? colors.card : COLORS.white,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
     overflow: 'hidden',
@@ -388,7 +333,7 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: COLORS.gray,
+    backgroundColor: colors.gray,
     marginHorizontal: 4,
     opacity: 0.3,
   },
@@ -422,7 +367,7 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
   ratingBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.lightGray,
+    backgroundColor: colors.lightGray,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 15,
@@ -505,12 +450,6 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
     color: colors.text,
     marginLeft: 10,
   },
-  deliveryLocation: {
-    fontSize: 13,
-    color: colors.gray,
-    marginLeft: 10,
-    flex: 1,
-  },
   stockStatus: {
     fontSize: 16,
     color: COLORS.success,
@@ -588,25 +527,6 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
   },
 
   divider: { height: 8, backgroundColor: colors.lightGray, marginVertical: 10 },
-  bulletSection: { padding: 20 },
-  bulletRow: {
-    flexDirection: 'row',
-    marginBottom: 10,
-    paddingRight: 15,
-  },
-  bulletDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.text,
-    marginTop: 8,
-    marginRight: 12,
-  },
-  bulletText: {
-    fontSize: 15,
-    color: colors.text,
-    lineHeight: 22,
-  },
   descriptionSection: { padding: 20 },
   sectionTitle: {
     ...FONTS.h3,
@@ -649,10 +569,10 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
   safetySection: {
     margin: 20,
     padding: 15,
-    backgroundColor: '#FFF5F5',
+    backgroundColor: isDarkMode ? '#2D1E1E' : '#FFF5F5',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#FFDADA',
+    borderColor: isDarkMode ? '#4D2D2D' : '#FFDADA',
   },
   safetyHeader: {
     flexDirection: 'row',
@@ -662,75 +582,14 @@ const createStyles = (colors: any, insets: any) => StyleSheet.create({
   safetyTitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#B12704',
+    color: isDarkMode ? '#FF8A8A' : '#B12704',
     marginLeft: 8,
   },
   safetyText: {
     fontSize: 13,
-    color: '#444',
+    color: isDarkMode ? '#FFDADA' : '#444',
     lineHeight: 18,
     fontStyle: 'italic',
-  },
-  reviewSection: { padding: 20 },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  writeReviewLink: {
-    color: COLORS.secondary,
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  reviewCard: {
-    marginBottom: 25,
-    backgroundColor: colors.lightGray + '50',
-    padding: 15,
-    borderRadius: 20,
-  },
-  userRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  userAvatarBg: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  avatarText: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  reviewRatingRow: {
-    flexDirection: 'row',
-    marginTop: 2,
-  },
-  reviewComment: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
-  },
-  emptyReviews: {
-    alignItems: 'center',
-    paddingVertical: 30,
-  },
-  noReviews: {
-    textAlign: 'center',
-    color: colors.gray,
-    marginTop: 10,
-    fontSize: 14,
   },
 });
 

@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { COLORS, FONTS, SIZES, SHADOWS } from '../constants/theme';
+import { COLORS, FONTS, SIZES, SHADOWS, ThemeColors } from '../constants/theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 import { moderateScale } from '../utils/responsive';
 
 interface ProductCardProps {
@@ -32,8 +32,8 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({
   isWishlisted = false,
   onWishlistPress
 }) => {
-  const { colors, isDarkMode } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles);
 
   const discount = product.listPrice && product.listPrice > product.price
     ? Math.round(((product.listPrice - product.price) / product.listPrice) * 100)
@@ -111,7 +111,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({
   );
 });
 
-const createStyles = (colors: any) => StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     width: '48%',
     backgroundColor: colors.card,

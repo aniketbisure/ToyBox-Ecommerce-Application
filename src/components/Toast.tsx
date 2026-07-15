@@ -1,14 +1,17 @@
-import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import React, { useEffect, useState, forwardRef, useImperativeHandle, useMemo } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { COLORS, SIZES, SHADOWS, FONTS } from '../constants/theme';
 import { moderateScale } from '../utils/responsive';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTheme } from '../hooks/useTheme';
 
 export interface ToastRef {
   show: (message: string, type?: 'success' | 'error' | 'info') => void;
 }
 
 const Toast = forwardRef<ToastRef>((_, ref) => {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [visible, setVisible] = useState(false);
   const [message, setMessage] = useState('');
   const [type, setType] = useState<'success' | 'error' | 'info'>('success');
@@ -63,13 +66,13 @@ const Toast = forwardRef<ToastRef>((_, ref) => {
   );
 });
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     position: 'absolute',
     bottom: moderateScale(100),
     left: moderateScale(20),
     right: moderateScale(20),
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     borderRadius: moderateScale(8),
     zIndex: 9999,
   },
@@ -83,7 +86,7 @@ const styles = StyleSheet.create({
   message: {
     ...FONTS.body,
     marginLeft: moderateScale(12),
-    color: COLORS.text,
+    color: colors.text,
     flex: 1,
   },
 });

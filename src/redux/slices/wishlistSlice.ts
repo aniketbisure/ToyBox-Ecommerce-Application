@@ -47,14 +47,27 @@ const wishlistSlice = createSlice({
         state.items.push(action.payload);
       }
     },
+    setWishlist: (state, action: PayloadAction<Product[]>) => {
+      state.items = action.payload;
+    },
     removeFromWishlist: (state, action: PayloadAction<string>) => {
       state.items = state.items.filter(item => item.id !== action.payload);
     },
   },
   extraReducers: (builder) => {
     builder
+      .addCase(syncWishlist.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(syncWishlist.fulfilled, (state, action) => {
+        state.loading = false;
         state.items = action.payload.map((p: any) => ({ ...p, id: p._id || p.id }));
+      })
+      .addCase(syncWishlist.rejected, (state) => {
+        state.loading = false;
+        // Optimization: The next time getProfile is called, it will fix the state.
+        // For a true rollback, we would need to pass the 'pre-toggle' state
+        // through the thunk's meta.
       })
       .addCase(getProfile.fulfilled, (state, action) => {
         if (action.payload.wishlist) {
@@ -64,5 +77,5 @@ const wishlistSlice = createSlice({
   }
 });
 
-export const { toggleWishlist, removeFromWishlist } = wishlistSlice.actions;
+export const { toggleWishlist, removeFromWishlist, setWishlist } = wishlistSlice.actions;
 export default wishlistSlice.reducer;

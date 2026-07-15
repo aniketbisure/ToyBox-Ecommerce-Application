@@ -63,6 +63,8 @@ export interface Order {
   };
   paymentMethod: string;
   totalPrice: number;
+  isPaid?: boolean;
+  status: 'PENDING' | 'PAID' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED';
   isDelivered: boolean;
   createdAt: string;
 }

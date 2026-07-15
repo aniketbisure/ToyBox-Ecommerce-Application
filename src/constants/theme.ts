@@ -33,8 +33,9 @@ export const DARK_THEME = {
   gray: '#718096',
   lightGray: '#2D3748',
   border: '#2D2D2D',
-  white: '#1E1E1E', // Overriding white for dark containers if needed, or use card
 };
+
+export type ThemeColors = typeof LIGHT_THEME;
 
 export const SIZES = {
   base: moderateScale(8),

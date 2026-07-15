@@ -10,15 +10,17 @@ import {
   TextInput,
   Platform
 } from 'react-native';
-import { COLORS, FONTS, SHADOWS } from '../constants/theme';
-import { moderateScale } from '../utils/responsive';
+import { COLORS, FONTS, SHADOWS, ThemeColors } from '../constants/theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, EdgeInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
+import { useTheme, useThemedStyles } from '../hooks/useTheme';
 
 const CategoriesScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useThemedStyles(createStyles, [insets]);
   const bottomTabHeight = Platform.OS === 'ios' ? 85 : 70;
   const { categories, ageRanges } = useSelector((state: RootState) => state.config);
   const { products } = useSelector((state: RootState) => state.products);
@@ -37,7 +39,7 @@ const CategoriesScreen = ({ navigation }: any) => {
 
   const sidebarItems = [
     { id: '1', name: 'All Toys', icon: 'toy-brick-outline', color: COLORS.primary },
-    ...subCategories.map((sub, i) => ({ id: (i + 2).toString(), name: sub, icon: 'tag-outline', color: COLORS.text }))
+    ...subCategories.map((sub, i) => ({ id: (i + 2).toString(), name: sub, icon: 'tag-outline', color: colors.text }))
   ];
 
   const categoryProducts = products.filter(p => {
@@ -73,7 +75,7 @@ const CategoriesScreen = ({ navigation }: any) => {
           <Icon
             name={item.icon}
             size={24}
-            color={isActive ? item.color : (item.name === 'All Toys' ? COLORS.primary : COLORS.gray)}
+            color={isActive ? item.color : (item.name === 'All Toys' ? COLORS.primary : colors.gray)}
           />
         </View>
         <Text style={[
@@ -89,23 +91,23 @@ const CategoriesScreen = ({ navigation }: any) => {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Toy Categories</Text>
         <View style={styles.headerActions}>
           <View style={styles.miniSearch}>
-            <Icon name="magnify" size={20} color={COLORS.gray} />
+            <Icon name="magnify" size={20} color={colors.gray} />
             <TextInput
               style={styles.miniSearchInput}
               placeholder="Search..."
-              placeholderTextColor={COLORS.gray}
+              placeholderTextColor={colors.gray}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
           </View>
           <TouchableOpacity style={styles.headerIcon}>
-            <Icon name="microphone-outline" size={24} color={COLORS.text} />
+            <Icon name="microphone-outline" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
       </View>
@@ -145,8 +147,8 @@ const CategoriesScreen = ({ navigation }: any) => {
             ))}
             {categoryProducts.length === 0 && (
               <View style={{ flex: 1, alignItems: 'center', marginTop: 40 }}>
-                <Icon name="toy-brick-outline" size={40} color={COLORS.lightGray} />
-                <Text style={{ ...FONTS.caption, marginTop: 10 }}>No products in this category</Text>
+                <Icon name="toy-brick-outline" size={40} color={colors.lightGray} />
+                <Text style={{ ...FONTS.caption, marginTop: 10, color: colors.textSecondary }}>No products in this category</Text>
               </View>
             )}
           </View>
@@ -176,22 +178,24 @@ const CategoriesScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors, isDarkMode: boolean, insets: EdgeInsets) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.background,
+    paddingTop: insets.top,
   },
   header: {
     paddingHorizontal: 15,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-    backgroundColor: COLORS.white,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.card,
   },
   headerTitle: {
     ...FONTS.h2,
     fontSize: 22,
     marginBottom: 12,
+    color: colors.text,
   },
   headerActions: {
     flexDirection: 'row',
@@ -200,19 +204,19 @@ const styles = StyleSheet.create({
   miniSearch: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0F2F2',
+    backgroundColor: colors.lightGray,
     borderRadius: 8,
     paddingHorizontal: 10,
     flex: 1,
     height: 44,
     borderWidth: 1,
-    borderColor: '#D5D9D9',
+    borderColor: colors.border,
   },
   miniSearchInput: {
     flex: 1,
     fontSize: 14,
     paddingVertical: 0,
-    color: COLORS.text,
+    color: colors.text,
     marginLeft: 8,
   },
   headerIcon: {
@@ -221,7 +225,7 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F0F2F2',
+    backgroundColor: colors.lightGray,
     borderRadius: 8,
   },
   mainContent: {
@@ -230,9 +234,9 @@ const styles = StyleSheet.create({
   },
   sidebar: {
     width: 90,
-    backgroundColor: '#F7F8F9',
+    backgroundColor: colors.lightGray,
     borderRightWidth: 1,
-    borderRightColor: '#E0E0E0',
+    borderRightColor: colors.border,
   },
   sidebarItem: {
     alignItems: 'center',
@@ -242,29 +246,29 @@ const styles = StyleSheet.create({
     borderLeftColor: 'transparent',
   },
   activeSidebarItem: {
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     borderLeftColor: COLORS.primary,
   },
   iconCircle: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 6,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: colors.border,
   },
   sidebarText: {
     fontSize: 10,
     textAlign: 'center',
     fontWeight: '600',
-    color: '#565959',
+    color: colors.textSecondary,
   },
   contentArea: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.background,
     padding: 12,
   },
   sectionTitle: {
@@ -272,7 +276,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 15,
     marginTop: 5,
-    color: COLORS.text,
+    color: colors.text,
     fontWeight: '800',
   },
   grid: {
@@ -282,18 +286,18 @@ const styles = StyleSheet.create({
   },
   gridItemLarge: {
     width: '48%',
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     borderRadius: 12,
     padding: 8,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: colors.border,
     alignItems: 'center',
   },
   largeItemImage: {
     width: '100%',
     aspectRatio: 1,
-    backgroundColor: '#F7F8F9',
+    backgroundColor: colors.lightGray,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -303,7 +307,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     fontWeight: '500',
-    color: COLORS.text,
+    color: colors.text,
     marginTop: 2,
   },
 });
