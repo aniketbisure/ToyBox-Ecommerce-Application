@@ -37,9 +37,19 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
+    console.log(`[LOGIN_ATTEMPT] Email: ${email}`);
+
     const user = await User.findOne({ email }).select('+password');
 
-    if (!user || !(await user.matchPassword(password))) {
+    if (!user) {
+      console.log(`[LOGIN_FAILED] User not found: ${email}`);
+      res.status(401).json({ message: 'Invalid credentials' });
+      return;
+    }
+
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      console.log(`[LOGIN_FAILED] Password mismatch for: ${email}`);
       res.status(401).json({ message: 'Invalid credentials' });
       return;
     }
@@ -48,13 +58,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     user.refreshToken = refreshToken;
     await user.save();
 
+    console.log(`[LOGIN_SUCCESS] User logged in: ${user.email} (${user.role})`);
     res.status(200).json({
       token: accessToken,
       refreshToken,
       user: { id: user._id, name: user.name, email: user.email, role: user.role }
     });
-  } catch (error) {
-    res.status(500).json({ message: 'Error logging in', error });
+  } catch (error: any) {
+    console.error(`[LOGIN_ERROR] ${error.message}`);
+    res.status(500).json({ message: 'Error logging in', error: error.message });
   }
 };
 

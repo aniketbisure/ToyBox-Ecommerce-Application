@@ -34,10 +34,19 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: any, { rejectWithValue }) => {
     try {
+      console.log('[AUTH_SLICE] Attempting login to:', apiClient.defaults.baseURL + '/auth/login');
       const response = await apiClient.post('/auth/login', credentials);
+      console.log('[AUTH_SLICE] Login response received:', response.status);
       await saveTokens(response.data.token, response.data.refreshToken);
       return response.data;
     } catch (error: any) {
+      console.error('[AUTH_SLICE] Login failed:', error.message);
+      if (error.response) {
+        console.error('[AUTH_SLICE] Error data:', error.response.data);
+        console.error('[AUTH_SLICE] Error status:', error.response.status);
+      } else if (error.request) {
+        console.error('[AUTH_SLICE] No response received from server. Check URL and connection.');
+      }
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
   }

@@ -43,13 +43,27 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
       showToast('Please fill in all fields', 'error');
       return;
     }
-    const resultAction = await dispatch(loginUser({ email, password }));
-    if (loginUser.fulfilled.match(resultAction)) {
-      showToast(`Welcome back, ${resultAction.payload.user.name}!`, 'success');
-    } else if (loginUser.rejected.match(resultAction)) {
-      const errorMessage = resultAction.payload as string || 'Invalid email or password. Please try again.';
-      showToast(errorMessage, 'error');
+    console.log('--- LOGIN START ---');
+    console.log('Email:', email);
+
+    try {
+      const resultAction = await dispatch(loginUser({ email, password }));
+
+      console.log('Result Action Type:', resultAction.type);
+
+      if (loginUser.fulfilled.match(resultAction)) {
+        console.log('Login Success:', resultAction.payload.user.email);
+        showToast(`Welcome back, ${resultAction.payload.user.name}!`, 'success');
+      } else if (loginUser.rejected.match(resultAction)) {
+        console.error('Login Rejected:', resultAction.payload);
+        const errorMessage = resultAction.payload as string || 'Invalid email or password. Please try again.';
+        showToast(errorMessage, 'error');
+      }
+    } catch (err: any) {
+      console.error('Login Exception:', err.message);
+      showToast('An unexpected error occurred', 'error');
     }
+    console.log('--- LOGIN END ---');
   };
 
   return (
