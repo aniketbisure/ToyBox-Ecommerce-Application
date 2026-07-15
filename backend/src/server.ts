@@ -27,7 +27,16 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/toybox';
 app.set('trust proxy', 1);
 
 // SECURITY FIX: Fail fast if critical secrets are missing
-const REQUIRED_ENV = ['JWT_SECRET', 'JWT_REFRESH_SECRET', 'RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET'];
+const REQUIRED_ENV = [
+  'JWT_SECRET',
+  'JWT_REFRESH_SECRET',
+  'RAZORPAY_KEY_ID',
+  'RAZORPAY_KEY_SECRET',
+  'RAZORPAY_WEBHOOK_SECRET',
+  'CLOUDINARY_CLOUD_NAME',
+  'CLOUDINARY_API_KEY',
+  'CLOUDINARY_API_SECRET'
+];
 REQUIRED_ENV.forEach((key) => {
   if (!process.env[key]) {
     logger.error(`ERROR: Missing critical environment variable ${key}`);

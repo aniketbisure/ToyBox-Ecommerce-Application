@@ -11,10 +11,13 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {
+    // ponytail: simplify public_id to avoid special character issues in Cloudinary
+    const timestamp = Date.now();
+    const cleanName = file.originalname.replace(/[^a-z0-9]/gi, '_').toLowerCase();
     return {
       folder: 'toybox',
       allowed_formats: ['jpg', 'png', 'jpeg'],
-      public_id: `${Date.now()}-${file.originalname.split('.')[0]}`,
+      public_id: `${timestamp}-${cleanName.substring(0, 50)}`,
     };
   },
 });
