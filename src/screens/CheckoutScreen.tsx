@@ -23,6 +23,7 @@ import CustomButton from '../components/CustomButton';
 import RazorpayCheckout from 'react-native-razorpay';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Address } from '../types';
+import { useTheme } from '../hooks/useTheme';
 
 const getRazorpayKey = (configState: any): string => {
   return configState?.razorpayKeyId || 'rzp_test_TCuOm81OvEluht';
@@ -31,6 +32,9 @@ const getRazorpayKey = (configState: any): string => {
 const CheckoutScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
+  const { colors, isDarkMode } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const { totalAmount, items } = useSelector((state: RootState) => state.cart);
   const user = useSelector((state: RootState) => state.auth.user);
   const configState = useSelector((state: RootState) => state.config);
@@ -166,30 +170,30 @@ const CheckoutScreen = ({ navigation }: any) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 10, backgroundColor: colors.card, borderBottomColor: colors.lightGray }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Icon name="arrow-left" size={28} color={COLORS.text} />
+          <Icon name="arrow-left" size={28} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Checkout</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Checkout</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* Shipping Address Selection */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: colors.card, borderBottomColor: colors.lightGray }]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Shipping Address</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Shipping Address</Text>
             <TouchableOpacity onPress={() => setShowAddressModal(true)}>
               <Text style={styles.editBtn}>Change</Text>
             </TouchableOpacity>
           </View>
           {selectedAddress ? (
-            <View style={styles.addressCard}>
+            <View style={[styles.addressCard, { backgroundColor: colors.lightGray }]}>
               <Icon name="map-marker-radius" size={24} color={COLORS.primary} />
               <View style={styles.addressInfo}>
-                <Text style={styles.addressLabel}>{selectedAddress.label || 'Default Address'}</Text>
-                <Text style={styles.addressText}>
+                <Text style={[styles.addressLabel, { color: colors.text }]}>{selectedAddress.label || 'Default Address'}</Text>
+                <Text style={[styles.addressText, { color: colors.textSecondary }]}>
                   {`${selectedAddress.street}, ${selectedAddress.city} - ${selectedAddress.zip}`}
                 </Text>
               </View>
@@ -203,76 +207,76 @@ const CheckoutScreen = ({ navigation }: any) => {
         </View>
 
         {/* Contact Selection */}
-        <View style={styles.section}>
+        <View style={[styles.section, { backgroundColor: colors.card, borderBottomColor: colors.lightGray }]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Contact Number</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Contact Number</Text>
             <TouchableOpacity onPress={() => setShowPhoneModal(true)}>
               <Text style={styles.editBtn}>Change</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.contactCard}>
+          <View style={[styles.contactCard, { backgroundColor: colors.lightGray }]}>
             <Icon name="phone-outline" size={22} color={COLORS.secondary} />
-            <Text style={styles.contactText}>{selectedPhone || 'Select a phone number'}</Text>
+            <Text style={[styles.contactText, { color: colors.text }]}>{selectedPhone || 'Select a phone number'}</Text>
           </View>
         </View>
 
         {/* Order Summary */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Order Summary</Text>
-          <View style={styles.summaryCard}>
+        <View style={[styles.section, { backgroundColor: colors.card, borderBottomColor: colors.lightGray }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Order Summary</Text>
+          <View style={[styles.summaryCard, { backgroundColor: colors.lightGray }]}>
             {items.map((item, index) => (
               <View key={item.id || index} style={styles.itemRow}>
-                <Text style={styles.itemName} numberOfLines={1}>{item.name} x{item.quantity}</Text>
-                <Text style={styles.itemPrice}>₹{(item.price * item.quantity).toLocaleString()}</Text>
+                <Text style={[styles.itemName, { color: colors.textSecondary }]} numberOfLines={1}>{item.name} x{item.quantity}</Text>
+                <Text style={[styles.itemPrice, { color: colors.text }]}>₹{(item.price * item.quantity).toLocaleString()}</Text>
               </View>
             ))}
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: colors.gray + '50' }]} />
             <View style={styles.itemRow}>
-              <Text style={styles.totalLabel}>Total Payable</Text>
+              <Text style={[styles.totalLabel, { color: colors.text }]}>Total Payable</Text>
               <Text style={styles.totalValue}>₹{totalAmount.toLocaleString()}</Text>
             </View>
           </View>
         </View>
 
         {/* Payment Method */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Payment Method</Text>
-          <TouchableOpacity style={[styles.paymentCard, paymentMethod === 'COD' && styles.selectedCard]} onPress={() => setPaymentMethod('COD')}>
+        <View style={[styles.section, { backgroundColor: colors.card, borderBottomColor: colors.lightGray }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Payment Method</Text>
+          <TouchableOpacity style={[styles.paymentCard, { backgroundColor: colors.lightGray }, paymentMethod === 'COD' && styles.selectedCard]} onPress={() => setPaymentMethod('COD')}>
             <Icon name="truck-delivery-outline" size={24} color={COLORS.primary} />
-            <Text style={styles.paymentName}>Cash on Delivery</Text>
-            <Icon name={paymentMethod === 'COD' ? "check-circle" : "circle-outline"} size={22} color={paymentMethod === 'COD' ? COLORS.success : COLORS.gray} />
+            <Text style={[styles.paymentName, { color: colors.text }]}>Cash on Delivery</Text>
+            <Icon name={paymentMethod === 'COD' ? "check-circle" : "circle-outline"} size={22} color={paymentMethod === 'COD' ? COLORS.success : colors.gray} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.paymentCard, paymentMethod === 'Razorpay' && styles.selectedCard]} onPress={() => setPaymentMethod('Razorpay')}>
+          <TouchableOpacity style={[styles.paymentCard, { backgroundColor: colors.lightGray }, paymentMethod === 'Razorpay' && styles.selectedCard]} onPress={() => setPaymentMethod('Razorpay')}>
             <Icon name="credit-card-outline" size={24} color={COLORS.secondary} />
-            <Text style={styles.paymentName}>Razorpay / UPI / Cards</Text>
-            <Icon name={paymentMethod === 'Razorpay' ? "check-circle" : "circle-outline"} size={22} color={paymentMethod === 'Razorpay' ? COLORS.success : COLORS.gray} />
+            <Text style={[styles.paymentName, { color: colors.text }]}>Razorpay / UPI / Cards</Text>
+            <Icon name={paymentMethod === 'Razorpay' ? "check-circle" : "circle-outline"} size={22} color={paymentMethod === 'Razorpay' ? COLORS.success : colors.gray} />
           </TouchableOpacity>
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { backgroundColor: colors.card, borderTopColor: colors.lightGray }]}>
         <CustomButton title={`Place Order • ₹${totalAmount.toLocaleString()}`} onPress={handlePayment} loading={loading} />
       </View>
 
       {/* Address Selection Modal */}
       <Modal visible={showAddressModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Address</Text>
-              <TouchableOpacity onPress={() => setShowAddressModal(false)}><Icon name="close" size={24} /></TouchableOpacity>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Select Address</Text>
+              <TouchableOpacity onPress={() => setShowAddressModal(false)}><Icon name="close" size={24} color={colors.text} /></TouchableOpacity>
             </View>
             <FlatList
               data={user?.addresses || []}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={[styles.selectCard, selectedAddress?.id === item.id && styles.activeSelect]}
+                  style={[styles.selectCard, { backgroundColor: colors.lightGray }, selectedAddress?.id === item.id && styles.activeSelect]}
                   onPress={() => { setSelectedAddress(item); setShowAddressModal(false); }}
                 >
-                  <Text style={styles.selectLabel}>{item.label || 'Other'}</Text>
-                  <Text style={styles.selectText}>{item.street}, {item.city}</Text>
+                  <Text style={[styles.selectLabel, { color: colors.text }]}>{item.label || 'Other'}</Text>
+                  <Text style={[styles.selectText, { color: colors.textSecondary }]}>{item.street}, {item.city}</Text>
                 </TouchableOpacity>
               )}
               ListFooterComponent={
@@ -288,27 +292,28 @@ const CheckoutScreen = ({ navigation }: any) => {
       {/* Phone Selection Modal */}
       <Modal visible={showPhoneModal} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Phone Number</Text>
-              <TouchableOpacity onPress={() => setShowPhoneModal(false)}><Icon name="close" size={24} /></TouchableOpacity>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Select Phone Number</Text>
+              <TouchableOpacity onPress={() => setShowPhoneModal(false)}><Icon name="close" size={24} color={colors.text} /></TouchableOpacity>
             </View>
             <FlatList
               data={user?.phoneNumbers || []}
               keyExtractor={(item) => item}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={[styles.selectCard, selectedPhone === item && styles.activeSelect]}
+                  style={[styles.selectCard, { backgroundColor: colors.lightGray }, selectedPhone === item && styles.activeSelect]}
                   onPress={() => { setSelectedPhone(item); setShowPhoneModal(false); }}
                 >
-                  <Text style={styles.selectText}>{item}</Text>
+                  <Text style={[styles.selectText, { color: colors.text }]}>{item}</Text>
                 </TouchableOpacity>
               )}
               ListFooterComponent={
                 <View style={styles.addPhoneRow}>
                   <TextInput
-                    style={styles.phoneInput}
+                    style={[styles.phoneInput, { color: colors.text, borderColor: colors.gray }]}
                     placeholder="Add new phone..."
+                    placeholderTextColor={colors.gray}
                     keyboardType="numeric"
                     value={newPhone}
                     onChangeText={setNewPhone}
@@ -326,47 +331,47 @@ const CheckoutScreen = ({ navigation }: any) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 15, paddingBottom: 15, backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#EEE' },
+const createStyles = (colors: any) => StyleSheet.create({
+  container: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 15, paddingBottom: 15, borderBottomWidth: 1 },
   backBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
   headerTitle: { ...FONTS.h2, fontSize: 20 },
   content: { paddingBottom: 50 },
-  section: { backgroundColor: '#FFF', padding: 20, marginBottom: 10, borderBottomWidth: 1, borderBottomColor: '#EEE' },
+  section: { padding: 20, marginBottom: 10, borderBottomWidth: 1 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
   sectionTitle: { fontSize: 18, fontWeight: '800' },
   editBtn: { color: COLORS.secondary, fontWeight: '700' },
-  addressCard: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#F7F8F9', borderRadius: 12, padding: 15 },
+  addressCard: { flexDirection: 'row', alignItems: 'flex-start', borderRadius: 12, padding: 15 },
   addressInfo: { marginLeft: 12, flex: 1 },
   addressLabel: { fontWeight: '700', fontSize: 14, marginBottom: 4 },
-  addressText: { fontSize: 13, color: '#565959', lineHeight: 18 },
+  addressText: { fontSize: 13, lineHeight: 18 },
   noAddressCard: { flexDirection: 'row', alignItems: 'center', padding: 15, borderWidth: 1, borderColor: COLORS.primary, borderStyle: 'dashed', borderRadius: 12 },
   noAddressText: { color: COLORS.primary, fontWeight: '700', marginLeft: 10 },
-  contactCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F7F8F9', borderRadius: 12, padding: 15 },
+  contactCard: { flexDirection: 'row', alignItems: 'center', borderRadius: 12, padding: 15 },
   contactText: { marginLeft: 10, fontWeight: '600' },
-  summaryCard: { backgroundColor: '#F7F8F9', borderRadius: 12, padding: 15 },
+  summaryCard: { borderRadius: 12, padding: 15 },
   itemRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-  itemName: { fontSize: 13, flex: 1, color: '#565959' },
+  itemName: { fontSize: 13, flex: 1 },
   itemPrice: { fontSize: 13, fontWeight: '600' },
-  divider: { height: 1, backgroundColor: '#DDD', marginVertical: 10 },
+  divider: { height: 1, marginVertical: 10 },
   totalLabel: { fontSize: 16, fontWeight: '800' },
   totalValue: { fontSize: 18, color: COLORS.primary, fontWeight: '800' },
-  paymentCard: { flexDirection: 'row', alignItems: 'center', padding: 15, borderRadius: 12, backgroundColor: '#F7F8F9', marginBottom: 10 },
-  selectedCard: { borderColor: COLORS.primary, borderWidth: 1, backgroundColor: '#FFF' },
+  paymentCard: { flexDirection: 'row', alignItems: 'center', padding: 15, borderRadius: 12, marginBottom: 10 },
+  selectedCard: { borderColor: COLORS.primary, borderWidth: 1 },
   paymentName: { flex: 1, marginLeft: 15, fontWeight: '600' },
-  footer: { padding: 20, backgroundColor: '#FFF', borderTopWidth: 1, borderTopColor: '#EEE', ...SHADOWS.dark },
+  footer: { padding: 20, borderTopWidth: 1, ...SHADOWS.dark },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#FFF', borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 20, maxHeight: '70%' },
+  modalContent: { borderTopLeftRadius: 30, borderTopRightRadius: 30, padding: 20, maxHeight: '70%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   modalTitle: { fontSize: 18, fontWeight: '800' },
-  selectCard: { padding: 15, borderRadius: 12, backgroundColor: '#F7F8F9', marginBottom: 10 },
+  selectCard: { padding: 15, borderRadius: 12, marginBottom: 10 },
   activeSelect: { borderColor: COLORS.primary, borderWidth: 1 },
   selectLabel: { fontWeight: '700', marginBottom: 4 },
-  selectText: { color: '#565959' },
+  selectText: { },
   addSelectBtn: { padding: 15, alignItems: 'center' },
   addSelectText: { color: COLORS.primary, fontWeight: '700' },
   addPhoneRow: { flexDirection: 'row', marginTop: 10 },
-  phoneInput: { flex: 1, height: 50, borderBottomWidth: 1, borderColor: '#DDD' },
+  phoneInput: { flex: 1, height: 50, borderBottomWidth: 1 },
   addSmallBtn: { backgroundColor: COLORS.primary, paddingHorizontal: 20, justifyContent: 'center', borderRadius: 10, marginLeft: 10 },
   addSmallText: { color: '#FFF', fontWeight: '700' }
 });

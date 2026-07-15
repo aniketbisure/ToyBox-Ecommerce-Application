@@ -32,7 +32,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({
   isWishlisted = false,
   onWishlistPress
 }) => {
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   const discount = product.listPrice && product.listPrice > product.price
@@ -57,7 +57,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({
           <Icon
             name={isWishlisted ? "heart" : "heart-outline"}
             size={20}
-            color={isWishlisted ? COLORS.primary : '#888'}
+            color={isWishlisted ? COLORS.primary : colors.gray}
           />
         </TouchableOpacity>
         {discount > 0 && (
@@ -77,7 +77,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({
                 key={s}
                 name={s <= (product.rating || 0) ? "star" : "star-outline"}
                 size={14}
-                color={s <= (product.rating || 0) ? "#FFA41C" : "#CCC"}
+                color={s <= (product.rating || 0) ? COLORS.accent : colors.lightGray}
               />
             ))}
           </View>
@@ -93,7 +93,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({
         </View>
 
         <View style={styles.deliveryRow}>
-          <Icon name="truck-delivery-outline" size={14} color="#007600" />
+          <Icon name="truck-delivery-outline" size={14} color={COLORS.success} />
           <Text style={styles.deliveryText}>FREE delivery <Text style={{fontWeight: '700'}}>Tomorrow</Text></Text>
         </View>
 
@@ -114,18 +114,18 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({
 const createStyles = (colors: any) => StyleSheet.create({
   container: {
     width: '48%',
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     borderRadius: 20,
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: colors.border,
     overflow: 'hidden',
     ...SHADOWS.light,
   },
   imageWrapper: {
     width: '100%',
     aspectRatio: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.lightGray,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 10,
@@ -138,7 +138,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: colors.card,
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -167,7 +167,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 14,
     height: 38,
     lineHeight: 18,
-    color: '#333',
+    color: colors.text,
     fontWeight: '600',
   },
   ratingRow: {
@@ -180,7 +180,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   reviewCount: {
     fontSize: 12,
-    color: '#888',
+    color: colors.gray,
     marginLeft: 4,
   },
   priceRow: {
@@ -202,7 +202,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   mrp: {
     fontSize: 11,
     textDecorationLine: 'line-through',
-    color: '#BBB',
+    color: colors.gray,
     marginLeft: 6,
   },
   deliveryRow: {
@@ -212,12 +212,12 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   deliveryText: {
     fontSize: 11,
-    color: '#888',
+    color: colors.textSecondary,
     marginLeft: 4,
   },
   addBtn: {
     marginTop: 12,
-    backgroundColor: '#333',
+    backgroundColor: colors.text,
     paddingVertical: 10,
     borderRadius: 12,
     alignItems: 'center',
@@ -225,7 +225,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   addBtnText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#FFF',
+    color: colors.card,
   },
 });
 

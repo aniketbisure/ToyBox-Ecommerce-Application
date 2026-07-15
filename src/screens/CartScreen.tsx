@@ -103,7 +103,7 @@ const CartScreen = ({ navigation }: any) => {
               }
             }}
           >
-            <Icon name="minus" size={18} color="#111" />
+            <Icon name="minus" size={18} color={colors.text} />
           </TouchableOpacity>
           <View style={styles.qtyValueContainer}>
             <Text style={styles.qtyValue}>{item.quantity}</Text>
@@ -118,7 +118,7 @@ const CartScreen = ({ navigation }: any) => {
               }
             }}
           >
-            <Icon name="plus" size={18} color="#111" />
+            <Icon name="plus" size={18} color={colors.text} />
           </TouchableOpacity>
         </View>
 

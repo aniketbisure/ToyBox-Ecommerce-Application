@@ -31,7 +31,7 @@ const WishlistScreen = ({ navigation }: any) => {
         <View style={styles.info}>
           <Text style={styles.name} numberOfLines={2}>{item.name}</Text>
           <View style={styles.ratingRow}>
-            {[1,2,3,4,5].map(s => <Icon key={s} name="star" size={14} color={s <= (item.rating || 0) ? "#FFA41C" : "#EEE"} />)}
+            {[1,2,3,4,5].map(s => <Icon key={s} name="star" size={14} color={s <= (item.rating || 0) ? COLORS.accent : colors.lightGray} />)}
             <Text style={styles.ratingCount}>({item.numReviews || 0})</Text>
           </View>
           <Text style={styles.price}>₹{item.price.toLocaleString()}</Text>
