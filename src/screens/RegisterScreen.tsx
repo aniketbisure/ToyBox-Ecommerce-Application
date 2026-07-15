@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,19 +8,17 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
-  Dimensions,
   StatusBar
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser, clearError } from '../redux/slices/authSlice';
 import { AppDispatch, RootState } from '../redux/store';
 import { COLORS, FONTS, SHADOWS } from '../constants/theme';
-import { moderateScale } from '../utils/responsive';
 import { showToast } from '../utils/toastService';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CustomButton from '../components/CustomButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../hooks/useTheme';
 import { RegisterScreenNavigationProp } from '../types/navigation';
 
 interface RegisterScreenProps {
@@ -29,13 +27,16 @@ interface RegisterScreenProps {
 
 const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
-  const { loading, error } = useSelector((state: RootState) => state.auth);
+  const { loading } = useSelector((state: RootState) => state.auth);
 
   const handleRegister = async () => {
     if (!name || !email || !password) {
@@ -52,10 +53,10 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container]}
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 40 }]}
         showsVerticalScrollIndicator={false}
@@ -67,7 +68,7 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
             navigation.goBack();
           }}
         >
-          <Icon name="arrow-left" size={28} color="#2D3436" />
+          <Icon name="arrow-left" size={28} color={colors.text} />
         </TouchableOpacity>
 
         <View style={styles.header}>
@@ -79,11 +80,11 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Full Name</Text>
             <View style={styles.inputWrapper}>
-              <Icon name="account-outline" size={20} color={COLORS.gray} style={styles.inputIcon} />
+              <Icon name="account-outline" size={20} color={colors.gray} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Enter your name"
-                placeholderTextColor={COLORS.gray}
+                placeholderTextColor={colors.gray}
                 value={name}
                 onChangeText={setName}
               />
@@ -93,11 +94,11 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email Address</Text>
             <View style={styles.inputWrapper}>
-              <Icon name="email-outline" size={20} color={COLORS.gray} style={styles.inputIcon} />
+              <Icon name="email-outline" size={20} color={colors.gray} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="aniket@example.com"
-                placeholderTextColor={COLORS.gray}
+                placeholderTextColor={colors.gray}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -109,11 +110,11 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
             <View style={styles.inputWrapper}>
-              <Icon name="lock-outline" size={20} color={COLORS.gray} style={styles.inputIcon} />
+              <Icon name="lock-outline" size={20} color={colors.gray} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Create a password"
-                placeholderTextColor={COLORS.gray}
+                placeholderTextColor={colors.gray}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -122,7 +123,7 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
                 <Icon
                   name={showPassword ? "eye-off-outline" : "eye-outline"}
                   size={20}
-                  color={COLORS.gray}
+                  color={colors.gray}
                 />
               </TouchableOpacity>
             </View>
@@ -153,22 +154,22 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
 
           <View style={styles.socialRow}>
             <TouchableOpacity
-              style={styles.socialBtn}
+              style={[styles.socialBtn, { borderColor: '#EA4335' }]}
               onPress={() => showToast('Google sign-up coming soon', 'info')}
             >
               <Icon name="google" size={24} color="#EA4335" />
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.socialBtn}
+              style={[styles.socialBtn, { borderColor: '#1877F2' }]}
               onPress={() => showToast('Facebook sign-up coming soon', 'info')}
             >
               <Icon name="facebook" size={24} color="#1877F2" />
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.socialBtn}
+              style={[styles.socialBtn, { borderColor: isDarkMode ? '#FFFFFF' : '#000000' }]}
               onPress={() => showToast('Apple sign-up coming soon', 'info')}
             >
-              <Icon name="apple" size={24} color="#000000" />
+              <Icon name="apple" size={24} color={isDarkMode ? '#FFFFFF' : '#000000'} />
             </TouchableOpacity>
           </View>
         </View>
@@ -177,10 +178,10 @@ const RegisterScreen = ({ navigation }: RegisterScreenProps) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FD',
+    backgroundColor: colors.background,
   },
   scrollContent: {
     flexGrow: 1,
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 15,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     ...SHADOWS.light,
@@ -202,15 +203,15 @@ const styles = StyleSheet.create({
   title: {
     ...FONTS.h1,
     fontSize: 32,
-    color: '#2D3436',
+    color: colors.text,
   },
   subtitle: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
     marginTop: 5,
   },
   formCard: {
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     borderRadius: 30,
     padding: 25,
     ...SHADOWS.medium,
@@ -223,18 +224,18 @@ const styles = StyleSheet.create({
     ...FONTS.body,
     fontWeight: '700',
     marginBottom: 10,
-    color: '#2D3436',
+    color: colors.text,
     fontSize: 14,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F9FD',
+    backgroundColor: colors.lightGray,
     borderRadius: 15,
     paddingHorizontal: 15,
     height: 56,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: colors.border,
   },
   inputIcon: {
     marginRight: 12,
@@ -242,7 +243,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     ...FONTS.body,
-    color: '#000000',
+    color: colors.text,
     fontSize: 15,
   },
   registerBtn: {
@@ -258,7 +259,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
     fontSize: 14,
   },
   loginText: {
@@ -275,11 +276,11 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: colors.border,
   },
   dividerText: {
     marginHorizontal: 15,
-    color: '#CBD5E0',
+    color: colors.gray,
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1,
@@ -293,11 +294,11 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 18,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: colors.border,
     ...SHADOWS.light,
   }
 });

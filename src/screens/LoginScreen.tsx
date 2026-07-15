@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,21 +8,18 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
-  Alert,
-  Dimensions,
   StatusBar
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, clearError } from '../redux/slices/authSlice';
 import { AppDispatch, RootState } from '../redux/store';
 import { COLORS, FONTS, SHADOWS } from '../constants/theme';
-import { moderateScale } from '../utils/responsive';
 import { showToast } from '../utils/toastService';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CustomButton from '../components/CustomButton';
 import Logo from '../components/common/Logo';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '../hooks/useTheme';
 import { LoginScreenNavigationProp } from '../types/navigation';
 
 interface LoginScreenProps {
@@ -31,47 +28,41 @@ interface LoginScreenProps {
 
 const LoginScreen = ({ navigation }: LoginScreenProps) => {
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
-  const { loading, error } = useSelector((state: RootState) => state.auth);
+  const { loading } = useSelector((state: RootState) => state.auth);
 
   const handleLogin = async () => {
     if (!email || !password) {
       showToast('Please fill in all fields', 'error');
       return;
     }
-    console.log('--- LOGIN START ---');
-    console.log('Email:', email);
 
     try {
       const resultAction = await dispatch(loginUser({ email, password }));
-
-      console.log('Result Action Type:', resultAction.type);
-
       if (loginUser.fulfilled.match(resultAction)) {
-        console.log('Login Success:', resultAction.payload.user.email);
         showToast(`Welcome back, ${resultAction.payload.user.name}!`, 'success');
       } else if (loginUser.rejected.match(resultAction)) {
-        console.error('Login Rejected:', resultAction.payload);
         const errorMessage = resultAction.payload as string || 'Invalid email or password. Please try again.';
         showToast(errorMessage, 'error');
       }
     } catch (err: any) {
-      console.error('Login Exception:', err.message);
       showToast('An unexpected error occurred', 'error');
     }
-    console.log('--- LOGIN END ---');
   };
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container]}
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 40 }]}
         showsVerticalScrollIndicator={false}
@@ -80,7 +71,7 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
           style={styles.backBtn}
           onPress={() => navigation.goBack()}
         >
-          <Icon name="arrow-left" size={28} color="#2D3436" />
+          <Icon name="arrow-left" size={28} color={colors.text} />
         </TouchableOpacity>
 
         <View style={styles.header}>
@@ -93,11 +84,11 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email Address</Text>
             <View style={styles.inputWrapper}>
-              <Icon name="email-outline" size={20} color={COLORS.gray} style={styles.inputIcon} />
+              <Icon name="email-outline" size={20} color={colors.gray} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="aniket@example.com"
-                placeholderTextColor={COLORS.gray}
+                placeholderTextColor={colors.gray}
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -109,11 +100,11 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
             <View style={styles.inputWrapper}>
-              <Icon name="lock-outline" size={20} color={COLORS.gray} style={styles.inputIcon} />
+              <Icon name="lock-outline" size={20} color={colors.gray} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="••••••••"
-                placeholderTextColor={COLORS.gray}
+                placeholderTextColor={colors.gray}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -122,7 +113,7 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
                 <Icon
                   name={showPassword ? "eye-off-outline" : "eye-outline"}
                   size={20}
-                  color={COLORS.gray}
+                  color={colors.gray}
                 />
               </TouchableOpacity>
             </View>
@@ -172,10 +163,10 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
               <Icon name="facebook" size={24} color="#1877F2" />
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.socialBtn, { borderColor: '#000000' }]}
+              style={[styles.socialBtn, { borderColor: isDarkMode ? '#FFFFFF' : '#000000' }]}
               onPress={() => showToast('Apple login coming soon', 'info')}
             >
-              <Icon name="apple" size={24} color="#000000" />
+              <Icon name="apple" size={24} color={isDarkMode ? '#FFFFFF' : '#000000'} />
             </TouchableOpacity>
           </View>
         </View>
@@ -184,10 +175,10 @@ const LoginScreen = ({ navigation }: LoginScreenProps) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FD',
+    backgroundColor: colors.background,
   },
   scrollContent: {
     flexGrow: 1,
@@ -197,7 +188,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 15,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     ...SHADOWS.light,
@@ -210,18 +201,18 @@ const styles = StyleSheet.create({
   title: {
     ...FONTS.h1,
     fontSize: 32,
-    color: '#2D3436',
+    color: colors.text,
     letterSpacing: 1,
   },
   subtitle: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
     textAlign: 'center',
     marginTop: 5,
     paddingHorizontal: 20,
   },
   formCard: {
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     borderRadius: 30,
     padding: 25,
     ...SHADOWS.medium,
@@ -233,18 +224,18 @@ const styles = StyleSheet.create({
     ...FONTS.body,
     fontWeight: '700',
     marginBottom: 10,
-    color: '#2D3436',
+    color: colors.text,
     fontSize: 14,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F9FD',
+    backgroundColor: colors.lightGray,
     borderRadius: 15,
     paddingHorizontal: 15,
     height: 56,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: colors.border,
   },
   inputIcon: {
     marginRight: 12,
@@ -252,7 +243,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     ...FONTS.body,
-    color: '#000000',
+    color: colors.text,
     fontSize: 15,
   },
   forgotBtn: {
@@ -277,7 +268,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     ...FONTS.body,
-    color: COLORS.gray,
+    color: colors.gray,
     fontSize: 14,
   },
   signupText: {
@@ -294,11 +285,11 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#F0F0F0',
+    backgroundColor: colors.border,
   },
   dividerText: {
     marginHorizontal: 15,
-    color: '#CBD5E0',
+    color: colors.gray,
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1,
@@ -312,11 +303,11 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 18,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.card,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: colors.border,
     ...SHADOWS.light,
   }
 });

@@ -48,11 +48,11 @@ export const SIZES = {
 };
 
 export const FONTS = {
-  h1: { fontSize: SIZES.h1, fontWeight: '700' as const, color: '#2D3436' },
-  h2: { fontSize: SIZES.h2, fontWeight: '700' as const, color: '#2D3436' },
-  h3: { fontSize: SIZES.h3, fontWeight: '600' as const, color: '#2D3436' },
-  body: { fontSize: SIZES.body, fontWeight: '400' as const, color: '#4A5568' },
-  caption: { fontSize: fontSize(12), fontWeight: '400' as const, color: '#718096' },
+  h1: { fontSize: SIZES.h1, fontWeight: '700' as const },
+  h2: { fontSize: SIZES.h2, fontWeight: '700' as const },
+  h3: { fontSize: SIZES.h3, fontWeight: '600' as const },
+  body: { fontSize: SIZES.body, fontWeight: '400' as const },
+  caption: { fontSize: fontSize(12), fontWeight: '400' as const },
 };
 
 export const SHADOWS = {
